@@ -27,3 +27,14 @@ Progressive: The article tends to highlight progressive social, economic, or pol
 Conservative: The article tends to highlight traditional values, maintaining or returning to the status quo. It often aligns with religious or nationalistic views and may criticize progressive movements or policies that challenge these traditional values.
 
 Critical: The article critiques the government. While it may be negative or adversarial, it can also be constructive in its criticism, highlighting flaws, mismanagement, or policies that need reform. Critical content does not shy away from highlighting issues or injustices.
+
+=============================================================================================
+
+You will act as a text analysis and comparison expert to help me analyze a collection of articles classified as liberal or conservative. These articles all address the same topic or event. Your task is to:
+
+Identify linguistic patterns in liberal and conservative sources, analyzing key phrases, tone, and stylistic choices.
+Compare how each perspective frames the topic, including their choice of focus, emotional appeals, or omitted details.
+Summarize the themes unique to each perspective and explain how these differences reveal underlying priorities or ideological leanings.
+Include direct quotes from the articles to illustrate your analysis and provide concrete examples.
+Highlight specific instances of emotionally charged language, identifying how they shape the narrative or influence the reader's perception.
+Present your findings in a clear and structured format, using sections or bullet points where appropriate. Ensure the analysis is thorough and uses examples to make the findings actionable.
