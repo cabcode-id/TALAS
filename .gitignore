@@ -1,7 +1,9 @@
-MachineLearning/LLM/Notebooks/var.env
 MachineLearning/machine-learning-main/
 MachineLearning/news-classification-main/
-MachineLearning/LLM/data/data_cleaned.parquet.gzip
-MachineLearning/LLM/data/data_tsne.parquet.gzip
-MachineLearning/LLM/data/data.csv
-MachineLearning/LLM/data/embeddings.npy
+*.pyc
+__pycache__/
+*.env
+MachineLearning/LLM/Development/data/data.csv
+MachineLearning/LLM/Development/data/data_cleaned.parquet.gzip
+MachineLearning/LLM/Development/data/data_tsne.parquet.gzip
+MachineLearning/LLM/Development/data/embeddings.npy
