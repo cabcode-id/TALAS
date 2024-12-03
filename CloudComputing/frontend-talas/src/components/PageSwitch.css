@@ -5,7 +5,7 @@
     display: grid; /* Mengatur tata letak menggunakan Grid */
     grid-template-columns: 2fr 1fr;
     gap: 5px;
-    margin: 14em; /* Margin auto untuk menjaga container tetap terpusat */
+    margin: 15em; /* Margin auto untuk menjaga container tetap terpusat */
     margin-top : 0em; /* Margin auto untuk menjaga container tetap terpusat */
     width: 100%;         /* Gunakan seluruh lebar layar */
     max-width: 1200px;   /* Tetapkan batas lebar maksimal */

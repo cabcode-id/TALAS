@@ -55,5 +55,17 @@ export const newsData = [
       
     },
 
+    {
+      id: 5,
+      title: 'Pertamax Sebabkan Kendaraan Rusak yang Viral di Cibinong? Ini Kata Ahli ITB',
+      link: 'https://finance.detik.com/energi/d-7661813/pertamax-sebabkan-kendaraan-rusak-yang-viral-di-cibinong-ini-kata-ahli-itb?mtype=mpc.ctr.A-boxccxmpcxmp-modelA',
+      imageUrl: 'https://awsimages.detik.net.id/community/media/visual/2024/08/10/ilustrasi-pertamax_169.jpeg?w=700&q=90', // URL gambar
+      left: 'berita left Pertamax Sebabkan Kendaraan Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      center: 'Berita center Pertamax Sebabkan Kendaraan Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      right: 'Berita right Pertamax Sebabkan Kendaraan Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      Page: 'http://localhost:5173/bias',
+    
+  },
+
   ];
   

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams } from 'react-router-dom';
+// import { useParams } from 'react-router-dom';
 import { newsData } from '../MockData';  // Mengimpor data berita dari mockData
 import styles from "./ToggleGroup.module.css"; // Mengimpor file CSS Module
 import './PageSwitch.css';
 
+// eslint-disable-next-line react/prop-types
 function ToggleGroup({ newsId }) {
   const [colorationLevel, setColorationLevel] = useState("center");
   const [selectedNewsId, setSelectedNewsId] = useState(newsId); // Gunakan newsId sebagai default

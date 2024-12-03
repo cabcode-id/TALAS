@@ -1,11 +1,14 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
 import './Navbar.css'; // Jika ada file CSS khusus untuk Navbar
+import ToggleMenu from './ToggleMenu';
+
 
 
 function Navbar() {
   return (
     <nav className="navbar">
+      <ToggleMenu />    
       <Logo />
       <Search />
       <Button />
