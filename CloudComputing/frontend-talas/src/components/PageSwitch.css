@@ -6,11 +6,10 @@
     grid-template-columns: 2fr 1fr;
     gap: 5px;
     margin: 14em; /* Margin auto untuk menjaga container tetap terpusat */
-    margin-top : 12em; /* Margin auto untuk menjaga container tetap terpusat */
+    margin-top : 0em; /* Margin auto untuk menjaga container tetap terpusat */
     width: 100%;         /* Gunakan seluruh lebar layar */
     max-width: 1200px;   /* Tetapkan batas lebar maksimal */
     /* justify-content: center; Rata tengah secara horizontal */
-    align-content: center;   /* Rata tengah secara vertikal */
     place-items: center;  /* Gabungan dari justify-items dan align-items */
     align-items: stretch; 
   
@@ -21,15 +20,23 @@
 /* Kolom kiri untuk judul berita */
 .left-column {
   display: flex;
-  justify-content: flex-start;  /* Mengatur posisi judul ke kiri */
+  flex-direction: column;
   align-items: flex-start;
-  padding: 10px;
+  padding: 0px;
+}
+
+.page-switch {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 10px 0;
 }
 
 /* Kolom kanan (opsional untuk konten lainnya) */
 .right-column {
   display: flex;
-  justify-content: flex-start;
+  flex-direction: column;
   align-items: flex-start;
   padding: 10px; /* Menambahkan padding pada kolom kanan */
   background-color: #f4f4f4; /* Warna latar belakang untuk kolom kanan */

@@ -9,6 +9,21 @@
   --divider-color: #ff6e613e; /* Warna garis pemisah */
 }
 
+.toggle-container{
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1em;
+  padding: 10px 0;
+}
+
+.summary {
+  margin-top: 20px;  /* Memberikan jarak antara toggle dan summary */
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
 /* Base Styles */
 .hiddenToggles {
   position: relative;

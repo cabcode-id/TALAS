@@ -4,8 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PageSwitch from "./components/PageSwitch"; // Impor komponen PageSwitch
 import Navbar from './components/Navbar'; // Impor Navbar yang baru dipindahkan
 import News from './components/News';
-import ToggleGroup from './components/ToggleGroup';
-
+// import ToggleGroup from './PageSwitch';
 export default function App() {
   return (
     <>
@@ -26,15 +25,7 @@ export default function App() {
             />
 
             {/* Route untuk halaman Home dan PageSwitch */}
-            <Route 
-              path="/bias/*"  // Perhatikan penambahan '/*' di sini
-              element={
-                <>
-                  <PageSwitch />
-                  <ToggleGroup />
-                </>
-              } 
-            />
+            <Route path="/bias/*" element={<PageSwitch />} />
           </Routes>
         </div>
       </Router>
