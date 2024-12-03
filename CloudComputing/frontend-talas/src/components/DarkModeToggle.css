@@ -65,7 +65,8 @@
   
   
 .opts {
-    color: gray;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
   }
   
   .opt-1 {
@@ -78,7 +79,7 @@
   }
   
   .active .opt-1 {
-    color: gray;
+    color: rgb(0, 0, 0);
   }
   
   .active .opt-2 {

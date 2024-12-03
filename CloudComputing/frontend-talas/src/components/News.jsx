@@ -23,7 +23,7 @@ function NewsPage() {
     <div className="left">
         
       <h1 className="h1">Berita Utama</h1>
-      {newsData.slice(0, 3).map((news) => ( // Menampilkan 3 berita pertama
+      {newsData.slice(0, 6).map((news) => ( // Menampilkan 3 berita pertama
         <div className="left-section" key={news.id}>
           <div className="card">
             <section className="article">
@@ -67,7 +67,7 @@ function Headline() {
   function Headline2() {
     return (
       <div className="headline2">
-        {newsData.slice(2, 4).map((news) => ( // Menampilkan 2 berita tambahan
+        {newsData.slice(2, 5).map((news) => ( // Menampilkan 2 berita tambahan
           <div key={news.id} className="image-text-pair">
             {/* Gambar di kiri */}
             <img
@@ -94,7 +94,7 @@ function BlindZone() {
   return (
     <div className="right-section">
       <h1 className="h1">Talas Blind Zone</h1>
-      {newsData.slice(4).map((news) => ( // Menampilkan berita lainnya di kanan
+      {newsData.slice(4, 6).map((news) => ( // Menampilkan berita lainnya di kanan
         <div className="blind-zone" key={news.id}>
           <section className="blind-title">
               <img src={news.imageUrl} alt={news.title} className="blind-img" />

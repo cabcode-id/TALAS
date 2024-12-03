@@ -58,7 +58,7 @@
     gap: 7px;
     color: var(--color-text);
     padding: 0 10px; /* Memberi ruang pada teks agar tidak menempel tepi */
-    max-width: 90%; /* Membatasi lebar teks */
+    max-width: 100%; /* Membatasi lebar teks */
     max-height: 80%; /* Membatasi tinggi teks */
     overflow: hidden; /* Menyembunyikan teks yang berlebih */
     text-overflow: ellipsis; /* Menambahkan ellipsis jika teks terlalu panjang */
@@ -112,9 +112,9 @@
     position: absolute; /* Menempatkan judul secara absolut di atas gambar */
     top: 36%; /* Menempatkan judul di tengah gambar secara vertikal */
     left: 39%; /* Menempatkan judul di tengah gambar secara horizontal */
-    transform: translate(-10%, -10%); /* Menyesuaikan posisi supaya benar-benar di tengah */
+    transform: translate(-10%, -190%); /* Menyesuaikan posisi supaya benar-benar di tengah */
     text-decoration: none;
-    max-width: calc(50% - 20px); /* Menghindari teks keluar dari gambar */
+    max-width: calc(45% - 20px); /* Menghindari teks keluar dari gambar */
     z-index: 2; /* Teks berada di atas gambar */
   
   }
@@ -122,7 +122,7 @@
   .center-section .title-headline a {
     text-decoration: none;
     /* color: var(--color-background-900); */
-    font-size: 35px;
+    font-size: 32px;
     font-weight: bold;
     color: white; 
   

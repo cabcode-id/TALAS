@@ -16,10 +16,10 @@ body {
   
   color: var(--color-background-900);
   font-family: 'Inter', 'sans-serif';
+  font-weight: bold;
   margin: 0;
 padding: 0;
 height: 100%;
-margin: 0;             /* Hapus margin default pada body */
 padding: 0 20px;       /* Menambahkan padding kiri dan kanan */
   transition: ease-in-out 0.1s;
   
@@ -70,6 +70,7 @@ html {
   width: 120px;   /* Lebar gambar persegi panjang */
   height: 65px;  /* Tinggi gambar persegi panjang */
   margin: 5px;
+  margin-left: 150px;
 }
 
 
@@ -118,5 +119,6 @@ html {
 }
 
 .auth-buttons button:hover {
-  color: var(--color-text);
+  filter: brightness(50%);     /* Mengurangi kecerahan gambar saat hover */
+  color: #9f9c9b;
 }
