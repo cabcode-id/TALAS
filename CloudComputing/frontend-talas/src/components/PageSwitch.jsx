@@ -4,6 +4,7 @@ import { Routes, Route, useParams } from 'react-router-dom';
 import './PageSwitch.css';
 import { newsData } from '../MockData'; // Pastikan path sesuai
 import './Navbar.css';
+import ToggleGroup from "./ToggleGroup";
 
 
 // Komponen untuk menampilkan detail berita (hanya judul)
@@ -20,6 +21,7 @@ function NewsDetail() {
       {/* Kolom Kiri */}
       <div className="left-column">
         <h1 className="detail-title">{news.title}</h1> {/* Menampilkan judul berita */}
+        <ToggleGroup newsId={news.id} />
       </div>
 
       {/* Kolom Kanan (opsional, bisa digunakan untuk konten lain) */}
@@ -33,10 +35,12 @@ function NewsDetail() {
 // PageSwitch: Routing untuk menampilkan Detail berita
 function PageSwitch() {
   return (
+    <div className="page-switch">
     <Routes>
       {/* Menampilkan detail berita dengan parameter ID */}
       <Route path="/:id" element={<NewsDetail />} />
     </Routes>
+    </div>
   );
 }
 

@@ -83,7 +83,7 @@ html {
   justify-content: flex-end; /* Menggeser tombol ke kanan */
   position: relative; /* Tambahkan ini jika Anda ingin mengontrol posisi dengan offset tambahan */
   width: 85%; /* Pastikan mengambil lebar penuh */
-  padding-right: 25%; /* Sesuaikan nilai ini untuk posisi lebih ke kanan */
+  padding-right: 5%; /* Sesuaikan nilai ini untuk posisi lebih ke kanan */
 }
 
 
