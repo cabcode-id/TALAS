@@ -4,14 +4,23 @@ import { Link } from 'react-router-dom';
 import './News.css';
 import './Navbar.css';
 import { newsData } from '../MockData'; // Pastikan pathnya benar
-
+// import News2 from "./News2";
 export default function News() {
   return (
     <div className="container">
       <NewsPage />
       <Headline />
-
       <BlindZone />
+      <div className='news-container'>
+      <News2 />
+      <News3/>
+      </div>
+      
+      <div className='news-container-2'>
+      {/* <News4 /> */}
+      {/* <News5 /> */}
+      </div>
+      
     </div>
   );
 }
@@ -23,7 +32,7 @@ function NewsPage() {
     <div className="left">
         
       <h1 className="h1">Berita Utama</h1>
-      {newsData.slice(0, 6).map((news) => ( // Menampilkan 3 berita pertama
+      {newsData.slice(0, 5).map((news) => ( // Menampilkan 3 berita pertama
         <div className="left-section" key={news.id}>
           <div className="card">
             <section className="article">
@@ -91,6 +100,7 @@ function Headline() {
 
 // Berita kanan / BlindZone Talas
 function BlindZone() {
+  
   return (
     <div className="right-section">
       <h1 className="h1">Talas Blind Zone</h1>
@@ -107,3 +117,102 @@ function BlindZone() {
     </div>
   );
 }
+
+function News2() {
+  return (
+    <div className='news-container'>
+    <div className="left-news2">
+        
+      <h1 className="h1">Berita Terkini</h1>
+      {newsData.slice(0, 5).map((news) => ( // Menampilkan 3 berita pertama
+        <div className="left-container" key={news.id}>
+            <section className="title-news2">
+              <img src={news.imageUrl} alt={news.title} className="img" />
+              <article>
+              <Link to={`/bias/${news.id}`}>{news.title}</Link>
+              </article>
+            </section>
+          </div>
+          
+      ))}
+    </div>
+    </div>
+
+
+  );
+}
+
+
+function News3() {
+  return (
+    <div className='news-container'>
+    <div className="right-news3">
+        
+      <h1 className="h1">Berita Lokal</h1>
+      {newsData.slice(0,5).map((news) => ( // Menampilkan 3 berita pertama
+        <div className="right-container" key={news.id}>
+            <section className="title-news2">
+              <img src={news.imageUrl} alt={news.title} className="img" />
+              <article>
+              <Link to={`/bias/${news.id}`}>{news.title}</Link>
+              </article>
+            </section>
+          </div>
+          
+      ))}
+    </div>
+    </div>
+  );
+}
+
+
+// function News4() {
+//   return (
+//     <div className='container-3'>
+//     <div className="left-news4">
+        
+//       <h1 className="h1">Berita Terkini</h1>
+//       {newsData.slice(0, 5).map((news) => ( // Menampilkan 3 berita pertama
+//         <div className="left-containernews4" key={news.id}>
+//             <section className="title-news2">
+//               <img src={news.imageUrl} alt={news.title} className="img" />
+//               <article>
+//               <Link to={`/bias/${news.id}`}>{news.title}</Link>
+//               </article>
+//             </section>
+//           </div>
+          
+//       ))}
+//     </div>
+//     </div>
+
+
+//   );
+// }
+
+// function News5() {
+//   return (
+//     <div className='news-container-2'>
+//     <div className="right-news5">
+        
+//       <h1 className="h1">Berita Terkini</h1>
+//       {newsData.slice(0, 5).map((news) => ( // Menampilkan 3 berita pertama
+//         <div className="right-containernews4" key={news.id}>
+//             <section className="title-news2">
+//               <img src={news.imageUrl} alt={news.title} className="img" />
+//               <article>
+//               <Link to={`/bias/${news.id}`}>{news.title}</Link>
+//               </article>
+//             </section>
+//           </div>
+          
+//       ))}
+//     </div>
+//     </div>
+
+
+//   );
+// }
+
+
+
