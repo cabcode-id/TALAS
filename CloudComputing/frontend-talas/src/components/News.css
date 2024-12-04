@@ -5,7 +5,7 @@
     display: grid; /* Mengatur tata letak menggunakan Grid */
     grid-template-columns: 1fr 2fr 1fr; /* Kolom kiri lebih kecil, kolom tengah lebih besar */
     gap: 5px;
-    margin: 14em; /* Margin auto untuk menjaga container tetap terpusat */
+    margin: 18em; /* Margin auto untuk menjaga container tetap terpusat */
     margin-top : 12em; /* Margin auto untuk menjaga container tetap terpusat */
     width: 100%;         /* Gunakan seluruh lebar layar */
     max-width: 1200px;   /* Tetapkan batas lebar maksimal */
@@ -29,8 +29,8 @@
   .img {
     position: relative;
     object-fit: cover;
-    width: 200px;   /* Lebar gambar persegi */
-    height: 120px;  /* Tinggi gambar persegi */
+    width: 150px;   /* Lebar gambar persegi */
+    height: 100px;  /* Tinggi gambar persegi */
     transition: all 0.3s ease; /* Menambahkan transisi yang halus */
     display: block;
     flex-shrink: 0; 
@@ -112,7 +112,7 @@
     position: absolute; /* Menempatkan judul secara absolut di atas gambar */
     top: 36%; /* Menempatkan judul di tengah gambar secara vertikal */
     left: 39%; /* Menempatkan judul di tengah gambar secara horizontal */
-    transform: translate(-10%, -190%); /* Menyesuaikan posisi supaya benar-benar di tengah */
+    transform: translate(-15%, -70%); /* Menyesuaikan posisi supaya benar-benar di tengah */
     text-decoration: none;
     max-width: calc(45% - 20px); /* Menghindari teks keluar dari gambar */
     z-index: 2; /* Teks berada di atas gambar */
@@ -133,7 +133,7 @@
     color: var(--color-background-900);
   }
   .center-section .img-headline {
-    width: 550px;   /* Lebar gambar persegi */
+    width: 500px;   /* Lebar gambar persegi */
     height: 350px;  /* Tinggi gambar persegi */
     object-fit: cover;
     position: relative; /* Tambahkan position relative pada gambar */
@@ -208,10 +208,17 @@
   
   
 
+
+.right-section {
+  display: flex;
+  flex-direction: column; /* Mengatur layout menjadi vertikal */
+  gap: 20px;              /* Menambahkan jarak antar komponen */
+}
   .right-section .h1 {
     font-size: 25px;
     font-weight: bold;
   }
+  
   .blind-title a {
     
     text-decoration: none;
@@ -236,3 +243,71 @@
     color: #9f9c9b;
   }
   
+
+  .news-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px; /* Jarak antar kolom yang lebih wajar */
+    margin: -30em; /* Rata tengah secara horizontal */
+    padding: 5px;
+    margin-top: 2em;
+    width: 100%;
+    max-width: 1200px;
+    box-sizing: border-box;
+}
+
+.left-news2 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    background-color: #bbafaf24;
+    box-sizing: border-box;
+    flex: 2; /* Kolom kiri lebih besar */
+    min-width: 80em;
+}
+
+.right-news3 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    background-color: #817373;
+    box-sizing: border-box;
+    flex: 1; /* Kolom kanan lebih kecil */
+    min-width: 40em;
+    margin-left: 55em;
+}
+
+.title-news2 {
+  display: flex;               /* Menggunakan flexbox untuk teks */
+  gap: 7px;                    /* Menambahkan jarak antar elemen di dalam teks */
+  padding: 0 10px;             /* Memberi ruang pada teks agar tidak menempel tepi */
+  max-width: 100%;              /* Membatasi lebar teks */
+  max-height: 80%;             /* Membatasi tinggi teks */
+  overflow: hidden;            /* Menyembunyikan teks yang berlebih */
+  text-overflow: ellipsis;     /* Menambahkan elipsis jika teks terlalu panjang */
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.title-news2 a {
+  text-decoration: none;
+  color: var(--color-background-900);  /* Menentukan warna teks */
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Styling saat hover pada link */
+.title-news2 a:hover {
+  text-decoration: underline;
+  color: var(--color-background-900);
+}
+
+@media (max-width: 768px) {
+    .news-container {
+        grid-template-columns: 1fr; /* Kolom menjadi satu */
+    }
+}
+
