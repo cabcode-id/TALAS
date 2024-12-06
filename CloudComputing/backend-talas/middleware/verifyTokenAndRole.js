@@ -5,7 +5,8 @@ function verifyTokenAndRoles(roles = []) {
         const token = req.cookies.token;
 
         if (!token) {
-            return res.redirect("/auth/login");
+            // return res.redirect("/auth/login");
+            res.json({ message: "Token not found" });
         }
 
         jwt.verify(token, "secretsecret", function (err, decoded) {

@@ -4,7 +4,8 @@ const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 
 const form = (req, res) => {
-    return res.render("login", { errorMessages: [] });
+    // return res.render("login", { errorMessages: [] });
+    res.json({ message: "This is login" });
 };
 
 const cekLogin = async (req, res) => {
@@ -14,7 +15,8 @@ const cekLogin = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const errorMessages = errors.array().map(error => error.msg);
-        return res.render("login", { errorMessages });
+        // return res.render("login", { errorMessages });
+        res.json({ errorMessages });
     }
 
     try {

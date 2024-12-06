@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 export default function App() {
@@ -103,15 +103,30 @@ function Button() {
 
 // berita LAyout
 function News() {
-  return(
-    <div className='container'> 
-      <NewsPage />
-      <Headline />
-      
-      <NewsLayout />
+  const endpoint = 'http://localhost:3000/article';
+  const [message, setMessage] = useState('');
 
+  const fetchData = async () => {
+    try {
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      setMessage(data.message); // Update state dengan pesan dari API
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(); // Memanggil fungsi fetchData
+  }, []); // Dependency array kosong untuk memastikan ini hanya dijalankan sekali
+
+  return (
+    <div>
+      <h1>{message}</h1>
+      <Headline/>
+      <NewsLayout/>
     </div>
-  )
+  );
 }
 
 
