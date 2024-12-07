@@ -1,14 +1,10 @@
 from app.main import app  
 import json
-import requests
+import os
 
-def test_predict_endpoint():
+def test_predict_endpoint(test_data):
     """Test the /cluster endpoint."""
     with app.test_client() as client:
-        test_data = {
-            "content": "Jakarta - Seorang polisi Brigadir J tewas ditembak oleh polisi lainnya, Bharada E. Brigadir J merupakan personel yang bertugas di Propam Polri."
-        }
-
         response = client.post(
             '/cluster',
             data=json.dumps(test_data),
@@ -21,32 +17,9 @@ def test_predict_endpoint():
         assert response.status_code == 200 
         assert "cluster" in response.json 
 
-def test_summarize_endpoint():
+def test_summarize_endpoint(test_data):
     """Test the /summarize endpoint."""
     with app.test_client() as client:
-        test_data = [
-            {
-                "title": "The Impact of Climate Change on Global Ecosystems",
-                "content": "Climate change is increasingly affecting ecosystems across the globe. Rising temperatures, changing rainfall patterns, and extreme weather events are disrupting biodiversity. Many species are migrating to new areas or becoming endangered. Urgent action is needed to reduce greenhouse gas emissions to mitigate further damage to our ecosystems."
-            },
-            {
-                "title": "Scientists Warn About Accelerating Global Warming",
-                "content": "Recent studies show that global warming is accelerating at an alarming rate. Rising CO2 levels in the atmosphere are contributing to faster melting of polar ice caps, leading to rising sea levels. Experts urge governments to take immediate action to curb emissions and implement policies that address climate change."
-            },
-            {
-                "title": "How Climate Change Is Affecting Agriculture",
-                "content": "Farmers around the world are struggling to adapt to the changing climate. Droughts, floods, and unpredictable weather patterns are making it harder to grow crops. Climate change poses a serious threat to food security, and agricultural practices must evolve to cope with these challenges. Sustainability and innovation in farming are crucial."
-            },
-            {
-                "title": "The Role of Renewable Energy in Combating Climate Change",
-                "content": "Renewable energy sources such as solar, wind, and hydroelectric power are key to reducing carbon emissions. Investing in renewable energy infrastructure is essential for transitioning to a carbon-neutral economy. These energy sources offer a sustainable alternative to fossil fuels, which contribute to climate change."
-            },
-            {
-                "title": "Climate Change and Human Health: A Growing Threat",
-                "content": "Climate change is not just an environmental issue; it’s a public health crisis. Rising temperatures are leading to more heatwaves, which can cause heat-related illnesses. Changing weather patterns also contribute to the spread of diseases like malaria and dengue fever. Governments need to prioritize health policies that address these risks."
-            }
-        ]
-
         response = client.post(
             '/summarize',
             data=json.dumps(test_data),
@@ -55,38 +28,45 @@ def test_summarize_endpoint():
 
         print("Status Code:", response.status_code)
         print("Response JSON:", response.json)
-
-        assert response.status_code == 200 
+        assert response.status_code == 200  
         assert "summary" in response.json
 
-def test_analyze_endpoint():
+        # embedding = response.json.get('embedding', [])
+        # bias = response.json.get('bias', [])
+        # hoax = response.json.get('hoax', [])
+        # ideology = response.json.get('ideology', [])
+
+        # for idx, article in enumerate(test_data):
+        #     article['embedding'] = embedding[idx] if idx < len(embedding) else None
+        #     article['bias'] = bias[idx] if idx < len(bias) else None
+        #     article['hoax'] = hoax[idx] if idx < len(hoax) else None
+        #     article['ideology'] = ideology[idx] if idx < len(ideology) else None
+
+        # def save_test_data_to_json(test_data, filename='temp_data.json'):
+        #     with open(filename, 'w') as f:
+        #         json.dump(test_data, f, indent=4)
+
+        # save_test_data_to_json(test_data)
+
+def test_analyze_endpoint(test_data):
     """Test the /analyze endpoint."""
     with app.test_client() as client:
-        test_data = [
-            {
-                "title": "The Impact of Climate Change on Global Ecosystems",
-                "content": "Climate change is increasingly affecting ecosystems across the globe. Rising temperatures, changing rainfall patterns, and extreme weather events are disrupting biodiversity. Many species are migrating to new areas or becoming endangered. Urgent action is needed to reduce greenhouse gas emissions to mitigate further damage to our ecosystems."
-            },
-            {
-                "title": "Scientists Warn About Accelerating Global Warming",
-                "content": "Recent studies show that global warming is accelerating at an alarming rate. Rising CO2 levels in the atmosphere are contributing to faster melting of polar ice caps, leading to rising sea levels. Experts urge governments to take immediate action to curb emissions and implement policies that address climate change."
-            },
-            {
-                "title": "How Climate Change Is Affecting Agriculture",
-                "content": "Farmers around the world are struggling to adapt to the changing climate. Droughts, floods, and unpredictable weather patterns are making it harder to grow crops. Climate change poses a serious threat to food security, and agricultural practices must evolve to cope with these challenges. Sustainability and innovation in farming are crucial."
-            },
-            {
-                "title": "The Role of Renewable Energy in Combating Climate Change",
-                "content": "Renewable energy sources such as solar, wind, and hydroelectric power are key to reducing carbon emissions. Investing in renewable energy infrastructure is essential for transitioning to a carbon-neutral economy. These energy sources offer a sustainable alternative to fossil fuels, which contribute to climate change."
-            },
-            {
-                "title": "Climate Change and Human Health: A Growing Threat",
-                "content": "Climate change is not just an environmental issue; it’s a public health crisis. Rising temperatures are leading to more heatwaves, which can cause heat-related illnesses. Changing weather patterns also contribute to the spread of diseases like malaria and dengue fever. Governments need to prioritize health policies that address these risks."
-            }
-        ]
 
         response = client.post(
             '/analyze',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json)
+        assert response.status_code == 200  
+        assert "analysis" in response.json
+
+def test_bias_endpoint(test_data):
+    """Test the /bias endpoint."""
+    with app.test_client() as client:
+        response = client.post(
+            '/bias',
             data=json.dumps(test_data),
             content_type='application/json'
         )
@@ -94,9 +74,55 @@ def test_analyze_endpoint():
         print("Status Code:", response.status_code)
         print("Response JSON:", response.json)
 
-        assert response.status_code == 200  
-        assert "analysis" in response.json
+        assert response.status_code == 200 
+        assert "bias" in response.json
 
-# test_predict_endpoint()
-# test_summarize_endpoint()
-test_analyze_endpoint()
+def test_hoax_endpoint(test_data):
+    """Test the /hoax endpoint."""
+    with app.test_client() as client:
+        response = client.post(
+            '/hoax',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json)
+
+        assert response.status_code == 200 
+        assert "hoax" in response.json
+
+def test_ideology_endpoint(test_data):
+    """Test the /ideology endpoint."""
+    with app.test_client() as client:
+        response = client.post(
+            '/ideology',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json)
+
+        assert response.status_code == 200 
+        assert "ideology" in response.json
+
+test_data = {
+    "content": "Jakarta - Seorang polisi Brigadir J tewas ditembak oleh polisi lainnya, Bharada E. Brigadir J merupakan personel yang bertugas di Propam Polri."
+}
+
+test_predict_endpoint(test_data)
+test_bias_endpoint(test_data)
+test_hoax_endpoint(test_data)
+test_ideology_endpoint(test_data)
+
+# with open('test_data.json') as f:
+#     test_data = json.load(f)
+
+with open('temp_data.json') as f:
+    test_data = json.load(f)
+
+test_summarize_endpoint(test_data)
+
+test_analyze_endpoint(test_data)
+
