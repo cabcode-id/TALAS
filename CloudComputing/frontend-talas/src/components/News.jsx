@@ -1,8 +1,10 @@
 // eslint-disable-next-line no-unused-vars
 import React from 'react';
 import { Link } from 'react-router-dom';
+
 import './News.css';
 import './Navbar.css';
+
 import { newsData } from '../MockData'; // Pastikan pathnya benar
 // import News2 from "./News2";
 export default function News() {
@@ -124,7 +126,7 @@ function News2() {
     <div className="left-news2">
         
       <h1 className="h1">Berita Terkini</h1>
-      {newsData.slice(0, 5).map((news) => ( // Menampilkan 3 berita pertama
+      {newsData.slice(0,5).map((news) => ( // Menampilkan 3 berita pertama
         <div className="left-container" key={news.id}>
             <section className="title-news2">
               <img src={news.imageUrl} alt={news.title} className="img" />
@@ -137,8 +139,6 @@ function News2() {
       ))}
     </div>
     </div>
-
-
   );
 }
 
@@ -163,56 +163,4 @@ function News3() {
     </div>
     </div>
   );
-}
-
-
-// function News4() {
-//   return (
-//     <div className='container-3'>
-//     <div className="left-news4">
-        
-//       <h1 className="h1">Berita Terkini</h1>
-//       {newsData.slice(0, 5).map((news) => ( // Menampilkan 3 berita pertama
-//         <div className="left-containernews4" key={news.id}>
-//             <section className="title-news2">
-//               <img src={news.imageUrl} alt={news.title} className="img" />
-//               <article>
-//               <Link to={`/bias/${news.id}`}>{news.title}</Link>
-//               </article>
-//             </section>
-//           </div>
-          
-//       ))}
-//     </div>
-//     </div>
-
-
-//   );
-// }
-
-// function News5() {
-//   return (
-//     <div className='news-container-2'>
-//     <div className="right-news5">
-        
-//       <h1 className="h1">Berita Terkini</h1>
-//       {newsData.slice(0, 5).map((news) => ( // Menampilkan 3 berita pertama
-//         <div className="right-containernews4" key={news.id}>
-//             <section className="title-news2">
-//               <img src={news.imageUrl} alt={news.title} className="img" />
-//               <article>
-//               <Link to={`/bias/${news.id}`}>{news.title}</Link>
-//               </article>
-//             </section>
-//           </div>
-          
-//       ))}
-//     </div>
-//     </div>
-
-
-//   );
-// }
-
-
-
+} 

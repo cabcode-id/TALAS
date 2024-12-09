@@ -1,7 +1,15 @@
 
+  .html,body{
+    overflow-x: hidden; /* Hindari scroll horizontal */
+    overflow-y: auto;   /* Pastikan scroll vertikal tetap aktif */
+    height: 100%;
+    margin: 0;
+    transition: var(--color-background-900) r 0.3s, color 0.3s;
+  }
   .dark {
     background: #181818;
     color: white;
+
   }
   
   .element {

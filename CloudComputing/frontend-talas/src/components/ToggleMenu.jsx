@@ -33,7 +33,7 @@ function Menu() {
       {/* Konten menu */}
       <ol className={`menu__content ${isMenuOpen ? 'open' : ''}`}>
         <li className="menu-item">
-          <a href="#0">Home</a>
+          <a href="/">Home</a>
         </li>
         <li className="menu-item">
           <a href="#0">My Account</a>
