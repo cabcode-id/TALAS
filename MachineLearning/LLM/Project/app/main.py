@@ -4,6 +4,8 @@ import pickle
 import numpy as np
 import pandas as pd
 import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # resolves warning
+
 import json
 
 # Third-party libraries

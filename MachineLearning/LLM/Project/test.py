@@ -119,10 +119,10 @@ test_ideology_endpoint(test_data)
 # with open('test_data.json') as f:
 #     test_data = json.load(f)
 
-with open('temp_data.json') as f:
-    test_data = json.load(f)
+# with open('temp_data.json') as f:
+#     test_data = json.load(f)
 
-test_summarize_endpoint(test_data)
+# test_summarize_endpoint(test_data)
 
-test_analyze_endpoint(test_data)
+# test_analyze_endpoint(test_data)
 
