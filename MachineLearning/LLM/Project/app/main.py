@@ -276,8 +276,8 @@ def create_analysis(query_engine):
     Your task is to analyze a given query and generate a response summarizing how articles from each perspective address the topic. 
     
     Ensure the response follows this structure:
-    Liberal: [Summarize key points using the language and tone of liberal articles. If no liberal perspective exists, omit this section.]
-    Conservative: [Summarize key points using the language and tone of conservative articles. If no conservative perspective exists, omit this section.]
+    Liberal: [Summarize key points using the language and tone of liberal articles. If no liberal perspective exists, only explain that there are no liberal perspectives.]
+    Conservative: [Summarize key points using the language and tone of conservative articles. If no conservative perspective exists, only explain that there are no conservative perspectives.]
     
     Follow these guidelines:
     Derive all information directly from the provided articles—do not rely on prior knowledge or external context.
@@ -285,6 +285,7 @@ def create_analysis(query_engine):
     Highlight notable phrases or specific terminology unique to each perspective to showcase differences in framing or emphasis.
     Only include sections for perspectives present in the articles. If only one perspective is available, summarize that side alone.
     Format responses as concise paragraphs. Do not include editorial commentary, personal interpretation, or merge perspectives into one.
+    Use Indonesian language.
     """
     response = query_engine.query(compareQuery)
     return response.response
@@ -292,7 +293,7 @@ def create_analysis(query_engine):
 @app.route('/analyze', methods=['POST'])
 def analyze_article():
     try:
-        Settings.llm = OpenAI(model='gpt-4o')
+        Settings.llm = OpenAI(model='chatgpt-4o-latest')
 
         data = request.get_json()
         
@@ -316,7 +317,11 @@ def analyze_article():
         analysis = create_analysis(query_engine)
 
         response = {
-            'analysis': analysis
+            'analysis': analysis,
+            'embedding': df['embedding'].tolist(),
+            'bias': df['bias'].tolist(),
+            'hoax': df['hoax'].tolist(),
+            'ideology': df['ideology'].tolist()
         }
 
         return jsonify(response), 200  
