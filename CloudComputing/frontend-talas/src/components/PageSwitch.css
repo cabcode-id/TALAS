@@ -1,53 +1,53 @@
-/* Container utama yang membagi layar menjadi dua kolom */
 
-  .news-container {
-    position: relative;
-    display: grid; /* Mengatur tata letak menggunakan Grid */
-    grid-template-columns: 2fr 1fr;
-    gap: 5px;
-    margin: 15em; /* Margin auto untuk menjaga container tetap terpusat */
-    margin-top : 0em; /* Margin auto untuk menjaga container tetap terpusat */
-    width: 100%;         /* Gunakan seluruh lebar layar */
-    max-width: 1200px;   /* Tetapkan batas lebar maksimal */
-    /* justify-content: center; Rata tengah secara horizontal */
-    place-items: center;  /* Gabungan dari justify-items dan align-items */
-    align-items: stretch; 
-  
-  }
-  
+.news-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+  margin-top: 8em;
 
+}
 
-/* Kolom kiri untuk judul berita */
 .left-column {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0px;
+  padding: 10px;
+  min-width: 70em;
+  /* background-color: #f9f9f9; Untuk debugging */
+  margin-left: 50em;
+  margin-top: 8em;
 }
 
-.page-switch {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 10px 0;
-}
-
-/* Kolom kanan (opsional untuk konten lainnya) */
 .right-column {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 10px; /* Menambahkan padding pada kolom kanan */
-  background-color: #f4f4f4; /* Warna latar belakang untuk kolom kanan */
-  min-width: 45em; /* Menetapkan lebar minimum agar kolom kanan tidak terlalu sempit */
-  box-sizing: border-box; /* Memastikan padding tidak mempengaruhi lebar */
+  padding: 10px;
+  /* background-color: #f4f4f4; */
+  min-width: 40em;
+  box-sizing: border-box;
+  margin-top: 10em;
 }
 
-/* Styling untuk judul berita */
 .detail-title {
   font-size: 24px;
   font-weight: bold;
-  color: #333;
-  text-align: left;  /* Pastikan judul berada di kiri */
+  color: var(--color-background-900);
+  text-align: left;
+}
+.detail-title a {
+  text-decoration: none;
+  color: var(--color-background-900);  /* Menentukan warna teks */
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Styling saat hover pada link */
+.detail-title a:hover {
+  text-decoration: underline;
+  color: var(--color-background-900);
 }

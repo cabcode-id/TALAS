@@ -96,7 +96,7 @@ html {
   position: relative; /* Tambahkan ini jika Anda ingin mengontrol posisi dengan offset tambahan */
   width: 100%; /* Pastikan mengambil lebar penuh */
   padding-right: 10%; /* Sesuaikan nilai ini untuk posisi lebih ke kanan */
-
+  z-index:1005;
 
 }
 

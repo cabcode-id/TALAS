@@ -33,7 +33,7 @@ function Menu() {
       {/* Konten menu */}
       <ol className={`menu__content ${isMenuOpen ? 'open' : ''}`}>
         <li className="menu-item">
-          <a href="#0">Home</a>
+          <a href="/">Home</a>
         </li>
         <li className="menu-item">
           <a href="#0">My Account</a>
@@ -42,7 +42,7 @@ function Menu() {
           <a href="#0">Sing Out</a>
         </li>
         <li className="menu-item">
-          <a href="#0">About Talas</a>
+          <a href="/about">About Talas</a>
           {/* <ol className="sub-menu">
             <li className="menu-item">
               <a href="#0">Big Widgets</a>
