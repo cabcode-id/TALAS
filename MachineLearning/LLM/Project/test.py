@@ -107,22 +107,22 @@ def test_ideology_endpoint(test_data):
         assert response.status_code == 200 
         assert "ideology" in response.json
 
-test_data = {
-    "content": "Jakarta - Seorang polisi Brigadir J tewas ditembak oleh polisi lainnya, Bharada E. Brigadir J merupakan personel yang bertugas di Propam Polri."
-}
+# test_data = {
+#     "content": "Jakarta - Seorang polisi Brigadir J tewas ditembak oleh polisi lainnya, Bharada E. Brigadir J merupakan personel yang bertugas di Propam Polri."
+# }
 
-test_predict_endpoint(test_data)
-test_bias_endpoint(test_data)
-test_hoax_endpoint(test_data)
-test_ideology_endpoint(test_data)
+# test_predict_endpoint(test_data)
+# test_bias_endpoint(test_data)
+# test_hoax_endpoint(test_data)
+# test_ideology_endpoint(test_data)
 
 # with open('test_data.json') as f:
 #     test_data = json.load(f)
 
-# with open('temp_data.json') as f:
-#     test_data = json.load(f)
+with open('temp_data.json') as f:
+    test_data = json.load(f)
 
 # test_summarize_endpoint(test_data)
 
-# test_analyze_endpoint(test_data)
+test_analyze_endpoint(test_data)
 
