@@ -7,6 +7,8 @@
   --text-active: #ffffff;
   --border-width: 0.125em;
   --divider-color: #ff6e613e; /* Warna garis pemisah */
+
+  
 }
 
 .toggle-container{
@@ -20,7 +22,7 @@
 .summary {
   margin-top: 20px;  /* Memberikan jarak antara toggle dan summary */
   padding: 10px;
-  background-color: #f9f9f9;
+  /* background-color: #f9f9f9; */
   border-radius: 8px;
 }
 
@@ -49,7 +51,7 @@
   position: relative;
   cursor: pointer;
   transition: all 0.2s ease-out;
-  color: var(--text);
+  color: var(--color-background-900);
   height: 100%;
   width: 33.3%;
   text-align: center;

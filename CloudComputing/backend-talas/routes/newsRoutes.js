@@ -3,7 +3,7 @@ const router = express.Router();
 // const db = require('../services/firestore');
 
 var admin = require("firebase-admin");
-var serviceAccount = require("../serviceAccountKey.json");
+var serviceAccount = require("../config/serviceAccountKey.json");
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
@@ -13,7 +13,7 @@ const { Firestore } = require('@google-cloud/firestore');
 
 const firestore = new Firestore({
     projectId: 'talas24',
-    keyFilename: '../backend-talas/serviceAccountKey.json', // File credential
+    keyFilename: '../backend-talas/config/serviceAccountKey.json', // File credential
     databaseId: 'analysisdb', // Nama database selain default
 });
 

@@ -1,17 +1,19 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Navbar.css'; // Jika ada file CSS khusus untuk Navbar
 import ToggleMenu from './ToggleMenu';
 
 
 
-function Navbar() {
+// eslint-disable-next-line react/prop-types
+function Navbar({ onLoginClick }) {
   return (
     <nav className="navbar">
       <ToggleMenu />    
       <Logo />
       <Search />
-      <Button />
+      <Button onClick={onLoginClick} />
     </nav>
   );
 }
@@ -39,10 +41,14 @@ function Search() {
   );
 }
 
-function Button() {
+// eslint-disable-next-line react/prop-types
+function Button({ onLoginClick }) {
   return (
     <div className="auth-buttons">
-      <button className="btn login-btn">Login</button>
+      
+      <Link to="/login"> 
+      <button onClick={onLoginClick} className="btn login-btn">Login</button>
+      </Link>
       <button className="btn subscribe-btn">Subscribe</button>
     </div>
   );
