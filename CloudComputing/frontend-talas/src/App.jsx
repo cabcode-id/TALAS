@@ -1,40 +1,38 @@
 import './App.css';
 import DarkModeToggle from './components/DarkModeToggle';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import PageSwitch from "./components/PageSwitch"; // Impor komponen PageSwitch
-import Navbar from './components/Navbar'; // Impor Navbar yang baru dipindahkan
+import PageSwitch from "./components/PageSwitch";
+import Navbar from './components/Navbar';
 import FormLogin from './components/FormLogin';
 import News from './components/News';
-// import Footer from './components/Footer';
+import ToggleMenu from './components/ToggleMenu';
+// import About from './pages/About';
+import About from './pages/about';
 
-// import ToggleGroup from './PageSwitch';
 export default function App() {
   return (
-    <>
-      <Router>
-        <div>
-          {/* Navbar dan DarkModeToggle akan selalu muncul di semua halaman */}
-          <Navbar />
-          <DarkModeToggle />
-          {/* <Footer /> */}
-          {/* <ToggleMenu/> */}
+    <Router>
+      <div>
+        {/* Navbar dan DarkModeToggle selalu muncul di semua halaman */}
+        <Navbar />
+        <DarkModeToggle />
 
-          {/* Routes menentukan halaman mana yang akan dimuat berdasarkan URL */}
-          <Routes>
-            {/* Route untuk Landing Page (berada di URL root "/") */}
-            <Route 
-              path="/" 
-              element={
-                <News />  
-              } 
-            />
-
-            {/* Route untuk halaman Home dan PageSwitch */}
-            <Route path="/bias/*" element={<PageSwitch />} />
-            <Route path="/login" element={<FormLogin />} />
-          </Routes>
-        </div>
-      </Router>
-    </>
+        {/* Routes menentukan halaman berdasarkan URL */}
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <>
+                <News />
+                <ToggleMenu />
+              </>
+            } 
+          />
+          <Route path="/bias/*" element={<PageSwitch />} />
+          <Route path="/login" element={<FormLogin />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
