@@ -77,6 +77,5 @@ const runScraping = (req, res) => {
     });
 };
 
-// Menjalankan semua file scraping
 
 module.exports = { runScraping, runAllScraping };
