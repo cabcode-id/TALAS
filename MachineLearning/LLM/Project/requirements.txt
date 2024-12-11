@@ -2,3 +2,9 @@ Flask
 numpy
 python-dotenv
 llama-index
+tensorflow
+nest-asyncio
+sastrawi
+swifter
+openai
+keras
