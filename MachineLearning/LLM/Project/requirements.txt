@@ -7,3 +7,9 @@ nest_asyncio
 llama-index
 keras
 openai
+tensorflow
+nest-asyncio
+sastrawi
+swifter
+openai
+keras

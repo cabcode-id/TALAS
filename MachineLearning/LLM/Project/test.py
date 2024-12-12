@@ -17,27 +17,15 @@ def test_predict_endpoint(test_data):
         assert response.status_code == 200 
         assert "cluster" in response.json 
 
-def test_summarize_endpoint(test_data):
-    """Test the /summarize endpoint."""
-    with app.test_client() as client:
-        response = client.post(
-            '/summarize',
-            data=json.dumps(test_data),
-            content_type='application/json'
-        )
-
-        print("Status Code:", response.status_code)
-        print("Response JSON:", response.json)
-        assert response.status_code == 200  
-        assert "summary" in response.json
-
         # embedding = response.json.get('embedding', [])
+        # cleaned = response.json.get('cleaned', [])
         # bias = response.json.get('bias', [])
         # hoax = response.json.get('hoax', [])
         # ideology = response.json.get('ideology', [])
 
         # for idx, article in enumerate(test_data):
         #     article['embedding'] = embedding[idx] if idx < len(embedding) else None
+        #     article['cleaned'] = cleaned[idx] if idx < len(cleaned) else None
         #     article['bias'] = bias[idx] if idx < len(bias) else None
         #     article['hoax'] = hoax[idx] if idx < len(hoax) else None
         #     article['ideology'] = ideology[idx] if idx < len(ideology) else None
@@ -47,20 +35,6 @@ def test_summarize_endpoint(test_data):
         #         json.dump(test_data, f, indent=4)
 
         # save_test_data_to_json(test_data)
-
-def test_analyze_endpoint(test_data):
-    """Test the /analyze endpoint."""
-    with app.test_client() as client:
-
-        response = client.post(
-            '/analyze',
-            data=json.dumps(test_data),
-            content_type='application/json'
-        )
-        print("Status Code:", response.status_code)
-        print("Response JSON:", response.json)
-        assert response.status_code == 200  
-        assert "analysis" in response.json
 
 def test_bias_endpoint(test_data):
     """Test the /bias endpoint."""
@@ -105,7 +79,83 @@ def test_ideology_endpoint(test_data):
         print("Response JSON:", response.json)
 
         assert response.status_code == 200 
-        assert "ideology" in response.json
+        assert "ideology" in response.json 
+
+def test_separate_endpoint(test_data):
+    """Test the /separate endpoint."""
+    with app.test_client() as client:
+        response = client.post(
+            '/separate',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json)
+
+        assert response.status_code == 200 
+        assert "clusters" in response.json # {[1,2,3], [4,5,6], [7,8,9]}
+
+def test_title_endpoint(test_data):
+    """Test the /title endpoint."""
+    with app.test_client() as client:
+        response = client.post(
+            '/title',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json)
+
+        assert response.status_code == 200 
+        assert "title" in response.json
+
+def test_modeCluster_endpoint(test_data):
+    """Test the /modeCluster endpoint."""
+    with app.test_client() as client:
+        response = client.post(
+            '/modeCluster',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json)
+
+        assert response.status_code == 200 
+        assert "modeCluster" in response.json
+
+def test_summary_endpoint(test_data):
+    """Test the /summary endpoint."""
+    with app.test_client() as client:
+        response = client.post(
+            '/summary',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json)
+
+        assert response.status_code == 200 
+        assert "summary_liberalism" in response.json
+        assert "summary_conservative" in response.json
+
+def test_analyze_endpoint(test_data):
+    """Test the /analyze endpoint."""
+    with app.test_client() as client:
+        response = client.post(
+            '/analyze',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+
+        print("Status Code:", response.status_code)
+        print("Response JSON:", response.json)
+
+        assert response.status_code == 200 
+        assert "analysis" in response.json
 
 # test_data = {
 #     "content": "Jakarta - Seorang polisi Brigadir J tewas ditembak oleh polisi lainnya, Bharada E. Brigadir J merupakan personel yang bertugas di Propam Polri."
@@ -116,13 +166,10 @@ def test_ideology_endpoint(test_data):
 # test_hoax_endpoint(test_data)
 # test_ideology_endpoint(test_data)
 
-# with open('test_data.json') as f:
+# with open('sameExample2.json') as f:
 #     test_data = json.load(f)
 
-with open('temp_data.json') as f:
-    test_data = json.load(f)
-
-# test_summarize_endpoint(test_data)
-
-test_analyze_endpoint(test_data)
-
+# test_title_endpoint(test_data)
+# test_modeCluster_endpoint(test_data)
+# test_summary_endpoint(test_data)
+# test_analyze_endpoint(test_data)
