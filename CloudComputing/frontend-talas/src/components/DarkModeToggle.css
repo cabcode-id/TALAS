@@ -17,7 +17,7 @@
     align-items: center;
     position: fixed; /* Tetap di posisi layar */
     right: 20px; /* Jarak dari kanan */
-    z-index: 10001; /* Prioritas di atas elemen lain */
+    z-index: 100; /* Prioritas di atas elemen lain */
     top: 24.2px;
   }
   
