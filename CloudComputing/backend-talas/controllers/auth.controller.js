@@ -2,9 +2,11 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
+const { User } = require("../models");
 
 const form = (req, res) => {
-    return res.render("login", { errorMessages: [] });
+    // return res.render("login", { errorMessages: [] });
+    res.json({ message: "This is login" });
 };
 
 const cekLogin = async (req, res) => {
@@ -14,7 +16,8 @@ const cekLogin = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const errorMessages = errors.array().map(error => error.msg);
-        return res.render("login", { errorMessages });
+        // return res.render("login", { errorMessages });
+        res.json({ errorMessages });
     }
 
     try {
@@ -82,9 +85,27 @@ const ubahPassword = async (req, res) => {
     }
 };
 
+const daftar = async (req, res) => { 
+    try {
+    console.log(req.body);
+    const { username, email, password, hp } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await User.create({
+        username : username,
+        email: email,
+        password: hashedPassword,
+        hp:hp, 
+    });
+    res.status(200).json({ message: 'Data berhasil disimpan', data: newUser });
+    } catch (error) {
+    res.status(500).json({ message: 'Terjadi kesalahan', error });
+    }
+};
+
 module.exports = {
     form,
     cekLogin,
     logout,
-    ubahPassword
+    ubahPassword,
+    daftar,
 };
