@@ -1,4 +1,9 @@
-Flask
 numpy
+pandas
+tensorflow
+flask
 python-dotenv
+nest_asyncio
 llama-index
+keras
+openai
