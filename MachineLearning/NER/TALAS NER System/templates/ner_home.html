@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TALAS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffedd5; /* Soft orange */
+            color: #333;
+        }
+
+        header {
+            background-color: #d35400; /* Bold orange */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 1rem;
+            color: #fbeee6; /* Lighter orange for subtitle */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .form-container {
+            padding: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #d35400; /* Bold orange */
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #c0392b; /* Darker hover color */
+        }
+
+        .keyword-section {
+            background-color: #ffe0cc; /* Light orange */
+            padding: 20px;
+        }
+
+        .keyword-section h3 {
+            color: #d35400; /* Bold orange */
+            margin-bottom: 10px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .entity {
+            background-color: #ffffff;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .entity input[type="text"],
+        .entity select {
+            flex: 1;
+            min-width: 150px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
+
+        .entity button {
+            padding: 6px 12px;
+            background-color: #e74c3c; /* Bright orange */
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .entity button:hover {
+            background-color: #c0392b; /* Darker hover color */
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>TALAS</h1>
+    <p>Analisis artikel dan ekstrak kata kunci</p>
+</header>
+
+<div class="container">
+    <!-- Form untuk memasukkan teks -->
+    <div class="form-container">
+        <form action="/process" method="POST">
+            <textarea name="input_data" rows="6" placeholder="Masukkan artikel berita di sini..."></textarea>
+            <button type="submit">Hasilkan Kata Kunci</button>
+        </form>
+    </div>
+
+    <!-- Tampilkan teks input jika tersedia -->
+    {% if input_text %}
+    <div class="keyword-section">
+        <h3>Isi Artikel:</h3>
+        <p>{{ input_text }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Tampilkan kata kunci yang diekstrak jika tersedia -->
+    {% if results %}
+    <div class="keyword-section">
+        <h3>Kata Kunci yang Dihasilkan:</h3>
+        <form action="/report" method="POST">
+            <input type="hidden" name="input_text" value="{{ input_text }}">
+            <ul>
+                {% for text, label in results %}
+                <li class="entity" data-entity="{{ text }}">
+                    <div>
+                        <label for="entity_{{ loop.index }}">Kata Kunci:</label>
+                        <input type="text" name="corrected_entities[]" id="entity_{{ loop.index }}" value="{{ text }}" required />
+                    </div>
+                    <div>
+                        <label for="label_{{ loop.index }}">Kategori:</label>
+                        <select name="entity_labels[]" id="label_{{ loop.index }}">
+                            <option value="PERSON" {% if label == 'PERSON' %}selected{% endif %}>Orang</option>
+                            <option value="ORGANIZATION" {% if label == 'ORGANIZATION' %}selected{% endif %}>Organisasi</option>
+                            <option value="LOCATION" {% if label == 'LOCATION' %}selected{% endif %}>Lokasi</option>
+                            <option value="DATE" {% if label == 'DATE' %}selected{% endif %}>Tanggal</option>
+                        </select>
+                    </div>
+                    <button type="button" class="remove-btn">Hapus</button>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="action-buttons">
+                <button type="submit" name="action" value="change">Ubah</button>
+                <button type="submit" name="action" value="next">Lanjutkan</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Remove entity from the list when the "Hapus" button is clicked
+    document.querySelectorAll('.remove-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const entityElement = button.closest('.entity');
+            if (entityElement) {
+                entityElement.remove();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
