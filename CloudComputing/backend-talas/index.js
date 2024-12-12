@@ -11,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 // Routes
 const scraping = require('./routes/crawlingNewsRoutes.js');
