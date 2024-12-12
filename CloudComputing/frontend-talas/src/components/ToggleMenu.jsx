@@ -76,13 +76,13 @@ function Menu() {
           <a href="#0">Contact Us</a>
         </li>
         <li className="menu-item">
-          <a href="#0">International Politics</a>
+          <a href="/international">International Politics</a>
         </li>
         <li className="menu-item">
-          <a href="#0">Finance</a>
+          <a href="/finance">Finance</a>
         </li>
         <li className="menu-item">
-          <a href="#0">Science & Tech</a>
+          <a href="/science">Science & Tech</a>
         </li>
         <li className="menu-item">
           <a href="#0">Referral Code</a>
@@ -91,7 +91,7 @@ function Menu() {
           <a href="#0">International</a>
         </li>
         <li className="menu-item">
-          <a href="#0">Discover More Topic</a>
+          <a href="/discover">Discover More Topic</a>
         </li>
         <li className="menu-item">
           <a href="#0">Product</a>
