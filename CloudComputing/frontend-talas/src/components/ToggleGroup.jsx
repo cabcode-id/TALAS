@@ -1,38 +1,63 @@
 import { useState, useEffect } from "react";
-// import { useParams } from 'react-router-dom';
-import { newsData } from '../MockData';  // Mengimpor data berita dari mockData
+import './ToggleGroup.module.css'; // Pastikan file CSS sesuai
 import styles from "./ToggleGroup.module.css"; // Mengimpor file CSS Module
-import './PageSwitch.css';
-import './Navbar.css';
 
 // eslint-disable-next-line react/prop-types
 function ToggleGroup({ newsId }) {
   const [colorationLevel, setColorationLevel] = useState("center");
   const [selectedNewsId, setSelectedNewsId] = useState(newsId); // Gunakan newsId sebagai default
+  const [news, setNews] = useState(null); // Menyimpan berita yang diambil dari API
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Memperbarui newsId ketika props newsId berubah
   useEffect(() => {
-    setSelectedNewsId(newsId); // Perbarui ID berita ketika props newsId berubah
+    setSelectedNewsId(newsId);
   }, [newsId]);
 
-  const handleChange = (event) => {
-    setColorationLevel(event.target.value);
-  };
+  // Mengambil data berita berdasarkan ID dari API
+  useEffect(() => {
+    const fetchNews = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/article/${selectedNewsId}`);
+        if (!response.ok) throw new Error("Data tidak ditemukan");
+        const data = await response.json();
+        setNews(data); // Menyimpan data berita di state
+      } catch (error) {
+        setError(error.message); // Menangani error
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Fungsi untuk mengambil summary berdasarkan ID berita dan level
+    if (selectedNewsId) {
+      fetchNews();
+    }
+  }, [selectedNewsId]);
+
+  // Mengambil summary berdasarkan level
   const getSummary = () => {
-    const selectedNews = newsData.find(news => news.id === selectedNewsId); // Temukan berita berdasarkan ID
-    if (!selectedNews) return 'Pilih berita terlebih dahulu.';
+    if (loading) return 'Loading...'; // Tampilkan loading jika data masih diambil
+    if (error) return `Error: ${error}`; // Tampilkan error jika ada masalah dengan fetch
+
+    if (!news) return 'Pilih berita terlebih dahulu.'; // Jika berita tidak ditemukan
 
     switch (colorationLevel) {
       case "left":
-        return selectedNews.left;
+        return news.left;  // Gunakan data dari API
       case "center":
-        return selectedNews.center;
+        return news.center;  // Gunakan data dari API
       case "right":
-        return selectedNews.right;
+        return news.right;  // Gunakan data dari API
       default:
         return 'Pilih salah satu untuk melihat summary.';
     }
+  };
+
+  // Mengubah state colorationLevel ketika pilihan radio berubah
+  const handleChange = (event) => {
+    setColorationLevel(event.target.value);
   };
 
   return (
@@ -96,6 +121,5 @@ function ToggleGroup({ newsId }) {
     </div>
   );
 }
-
 
 export default ToggleGroup;

@@ -8,15 +8,47 @@ const FormLogin = () => {
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const baseUrl = "http://localhost:5000"; // Base URL dari backend Anda
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    // Misalnya, Anda bisa menambahkan logika untuk memeriksa email dan password
-    if (email && password) {
-      alert("You are Signed In");
-    } else {
+    setError(""); // Reset error message sebelum mengirim form
+
+    // Validasi input
+    if (!email || !password) {
       setError("Please fill in all fields.");
+      return;
     }
+
+    // Membuat request untuk login
+    try {
+      const response = await fetch(`${baseUrl}/auth/login`, {
+        method: "POST", // Metode POST untuk login
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json(); // Mengambil response dari API
+
+      if (response.ok) {
+        // Jika login berhasil
+        alert("You are Signed In");
+        // Di sini Anda bisa menyimpan token atau melakukan redirect
+      } else {
+        // Jika ada error dari API
+        setError(data.message || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      // Menggunakan err untuk menampilkan detail error di console
+      console.error("Error occurred:", err);
+      setError("An error occurred. Please try again later.");
+    }
+    
   };
 
   const toggleShowPassword = () => {
