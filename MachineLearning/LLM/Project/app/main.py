@@ -98,6 +98,34 @@ def preprocessText(text):
 
     return text
 
+@app.route('/cleaned', methods=['POST'])
+def cleaned():
+    try:
+        input_data = request.json
+
+        if 'content' not in input_data:
+            return jsonify({"error": "Invalid input, 'content' field is required"}), 400
+
+        content = input_data['content']
+
+        if isinstance(content, str): 
+            cleaned = preprocessText(content)
+            return jsonify({"cleaned": cleaned})
+
+        elif isinstance(content, list): 
+            if not all(isinstance(item, str) for item in content):
+                return jsonify({"error": "All items in the 'content' list must be strings"}), 400
+
+            df = pd.DataFrame({'content': content})
+            df['cleaned'] = df['content'].swifter.apply(preprocessText)
+            return jsonify({"cleaned": df['cleaned'].tolist()})
+
+        else:  # Invalid type
+            return jsonify({"error": "'content' must be either a string or a list of strings"}), 400
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 def predictWithModel(newsText, tokenizer, interpreter, maxLen):
     new_sequences = tokenizer.texts_to_sequences([newsText])
     new_padded = pad_sequences(new_sequences, maxlen=maxLen, padding='post', truncating='post')
@@ -121,34 +149,34 @@ def predictHoax(newsText):
     return float(predictions[0])
 
 def predictIdeology(newsText):
-    newsText = preprocessText(newsText)
     predictions =  predictWithModel(newsText, ideology_tokenizer, ideology_interpreter, 100)
     return [1 if pred > 0.75 else 0 for pred in predictions][0]
 
 def completeDf(df):
-    for col in ['bias', 'hoax', 'ideology']:
+    for col in ['bias', 'hoax', 'ideology', 'embedding', 'cleaned']:
         if col not in df.columns:
             df[col] = None
 
-    if 'cleaned' not in df.columns:
-        df['cleaned'] = df['content'].swifter.apply(preprocessText)
+    mask = df['cleaned'].isnull() | (df['cleaned'] == '')
+
+    df.loc[mask, 'cleaned'] = df.loc[mask, 'content'].swifter.apply(preprocessText)
 
     df['embedding'] = df.apply(
-        lambda row: row['embedding'] if isinstance(row['embedding'], (list, np.ndarray)) else Settings.embed_model.get_text_embedding(row['content']),
+        lambda row: row['embedding'] if isinstance(row.get('embedding'), (list, np.ndarray)) else Settings.embed_model.get_text_embedding(row['content']),
         axis=1
     )
 
-    df['bias'] = df.apply(
+    df['bias'] = df.swifter.apply(
         lambda row: row['bias'] if pd.notnull(row['bias']) else predictBias([row['cleaned']]),
         axis=1
     )
 
-    df['hoax'] = df.apply(
+    df['hoax'] = df.swifter.apply(
         lambda row: row['hoax'] if pd.notnull(row['hoax']) else predictHoax([row['cleaned']]),
         axis=1
     )
 
-    df['ideology'] = df.apply(
+    df['ideology'] = df.swifter.apply(
         lambda row: row['ideology'] if pd.notnull(row['ideology']) else predictIdeology([row['cleaned']]),
         axis=1
     )
@@ -334,21 +362,24 @@ def get_embedding():
     try:
         data = request.get_json()
         
-        if not isinstance(data, list):
-            return jsonify({"error": "Input must be a list of news articles"}), 400
+        if isinstance(data, dict):  # If a single article is provided, wrap it in a list
+            data = [data]
+        elif not isinstance(data, list):  # If it's not a list or dict, return an error
+            return jsonify({"error": "Input must be a list of news articles or a single article"}), 400
         
         df = pd.DataFrame(data)
-
+        
         if 'content' not in df.columns:
             return jsonify({"error": "Input must contain 'content' field"}), 400
             
         df['embedding'] = df.apply(
-        lambda row: row['embedding'] if isinstance(row['embedding'], (list, np.ndarray)) else Settings.embed_model.get_text_embedding(row['content']),
-        axis=1
+            lambda row: row['embedding'] if isinstance(row.get('embedding'), (list, np.ndarray)) else Settings.embed_model.get_text_embedding(row['content']),
+            axis=1
         )
 
+        # Return embeddings
         return jsonify({"embedding": df['embedding'].tolist()}), 200
-    
+
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -451,7 +482,7 @@ def analyze():
         analysis = analyze_article(documents)
 
         response = {
-            'analysis': analysis,
+            'analyze': analysis,
         }
         return jsonify(response), 200
 
@@ -462,7 +493,7 @@ def analyze():
 def separate():
     try:
         data = request.get_json()
-        
+
         if not isinstance(data, list):
             return jsonify({"error": "Input must be a list of news articles"}), 400
         
@@ -472,7 +503,7 @@ def separate():
             if col not in df.columns:
                 return jsonify({"error": f"Input must contain {col} field"}), 400
             
-        df = dfEmbedding(df) # incase any empty ones
+        df = dfEmbedding(df)
 
         embeddings = np.array(df['embedding'].to_list(), dtype=np.float32)
 
@@ -487,17 +518,101 @@ def separate():
                     G.add_edge(i, j)
 
         clusters = [list(component) for component in nx.connected_components(G)]
-        df['cluster_index'] = -1  # Default to -1 for rows not in any cluster
 
-        for cluster_index, cluster_indices in enumerate(clusters):
-            df.loc[cluster_indices, 'cluster_index'] = cluster_index
+        cluster_indices = [-1] * len(df)
 
-        response = {
-            clusters: df['cluster_index'].tolist(),
-        }
+        # Assign a unique cluster index to each group
+        current_cluster_index = 0
+        for cluster in clusters:
+            for idx in cluster:
+                cluster_indices[idx] = current_cluster_index
+            current_cluster_index += 1
 
-        return jsonify({"clusters": response}), 200
-    
+        # For unclustered items, assign them unique indices starting from current_cluster_index
+        for idx, cluster_index in enumerate(cluster_indices):
+            if cluster_index == -1:
+                cluster_indices[idx] = current_cluster_index
+                current_cluster_index += 1
+
+        # Return the cluster indices
+        return jsonify({"separate": cluster_indices}), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+@app.route('/process-all', methods=['POST'])
+def processAll():
+    try:
+        data = request.get_json()
+
+        if not isinstance(data, list):
+            return jsonify({"error": "Input must be a list of news articles"}), 400
+        
+        df = pd.DataFrame(data)
+
+        for col in ['title', 'content']:
+            if col not in df.columns:
+                return jsonify({"error": f"Input must contain {col} field"}), 400
+
+        df = completeDf(df) # Dapatkan embedding, bersihin content, hoax, bias, ideology
+        
+        # Step 1: Cluster the articles
+        embeddings = np.array(df['embedding'].to_list(), dtype=np.float32)
+        similarity_threshold = 0.9
+        similarity_matrix = cosine_similarity(embeddings)
+
+        G = nx.Graph()
+        for i in range(len(similarity_matrix)):
+            for j in range(i + 1, len(similarity_matrix)):
+                if similarity_matrix[i, j] >= similarity_threshold:
+                    G.add_edge(i, j)
+
+        clusters = [list(component) for component in nx.connected_components(G)]
+        cluster_indices = [-1] * len(df)
+
+        # Assign a unique cluster index to each group
+        current_cluster_index = 0
+        for cluster in clusters:
+            for idx in cluster:
+                cluster_indices[idx] = current_cluster_index
+            current_cluster_index += 1
+
+        # For unclustered items, assign them unique indices starting from current_cluster_index
+        for idx, cluster_index in enumerate(cluster_indices):
+            if cluster_index == -1:
+                cluster_indices[idx] = current_cluster_index
+                current_cluster_index += 1
+        
+        # Assign cluster indices to the DataFrame
+        df['cluster_index'] = cluster_indices
+
+        # Step 2: Process each cluster and generate the results
+        results = []
+        for cluster_index in range(current_cluster_index):
+            # Filter rows belonging to the current cluster
+            cluster_df = df[df['cluster_index'] == cluster_index]
+
+            # Create documents for the current cluster
+            cluster_documents = create_documents(cluster_df)
+
+            # Process the current cluster (summarization, analysis, etc.)
+            summary_liberalism, summary_conservative = summarize_article(cluster_documents)
+            analysis = analyze_article(cluster_documents)
+            modeCluster = getClusters(cluster_df)  # Assuming getClusters processes per cluster
+            title = getTitle(cluster_documents)
+
+            # Append the results for the current cluster
+            cluster_result = {
+                'summary_liberalism': summary_liberalism,
+                'summary_conservative': summary_conservative,
+                'analyze': analysis,
+                'modeCluster': modeCluster,
+                'title': title
+            }
+            results.append(cluster_result)
+
+        # Step 3: Return the results as a list
+        return jsonify(results), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400

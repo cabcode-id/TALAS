@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [],
+  content: [
+    "./index.html", // File di root
+    "./src/**/*.{js,ts,jsx,tsx}", // Semua file dalam src
+  ],
   theme: {
     extend: {},
   },
