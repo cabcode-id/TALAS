@@ -157,9 +157,12 @@ def test_analyze_endpoint(test_data):
         assert response.status_code == 200 
         assert "analysis" in response.json
 
-# test_data = {
-#     "content": "Jakarta - Seorang polisi Brigadir J tewas ditembak oleh polisi lainnya, Bharada E. Brigadir J merupakan personel yang bertugas di Propam Polri."
-# }
+test_data = {
+    {
+        "title": "Sistem Ekonomi yang Gagal: Kenapa Pemuda Terjebak dalam Kejahatan?",
+        "content": "Kasus perampokan yang melibatkan seorang pemuda di Jakarta mencerminkan kegagalan sistem ekonomi yang tidak menyediakan peluang bagi generasi muda. Ketimpangan pendapatan terus meningkat, membuat banyak orang terpaksa mengambil jalan pintas untuk bertahan hidup."
+    }
+}
 
 # test_predict_endpoint(test_data)
 # test_bias_endpoint(test_data)
@@ -173,3 +176,9 @@ def test_analyze_endpoint(test_data):
 # test_modeCluster_endpoint(test_data)
 # test_summary_endpoint(test_data)
 # test_analyze_endpoint(test_data)
+
+
+
+
+
+# // alurnya setelah title besar dibuat,itu langsung disummarize 
