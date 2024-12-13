@@ -1,9 +1,11 @@
-Based on:
-https://github.com/bangkit-pukulrata/machine-learning/tree/main/model
+## Based on:
+https://github.com/bangkit-pukulrata/machine-learning/tree/main/model <br>
 https://github.com/tantowjy/news-classification/blob/main/website/main.py
 
-Dataset LLM: 
-https://www.kaggle.com/datasets/iqbalmaulana/indonesian-news-dataset
+## Dataset
+Dataset LLM: https://www.kaggle.com/datasets/iqbalmaulana/indonesian-news-dataset
+<br>
+Dataset NER: https://github.com/yohanesgultom/nlp-experiments/blob/master/data/ner/training_data.txt <br>
 
 # TALAS API Documentation
 
