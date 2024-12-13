@@ -1,23 +1,47 @@
 // eslint-disable-next-line no-unused-vars
-import React from "react";
-// import './PageSwitch.css';
+import React, { useState, useEffect } from "react";
 import './About.css';
 
-
-
-// Komponen untuk menampilkan detail berita (hanya judul)
 function About() {
+  const [data, setData] = useState(null); // Untuk menyimpan data yang diterima dari API
+  const [error, setError] = useState(null); // Untuk menangani error
+  const baseUrl = import.meta.env.VITE_BASE_URL; // Pastikan baseUrl diambil dari environment variable
+
+  useEffect(() => {
+    // Fungsi untuk mengambil data dari API
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/about`); // Ganti dengan endpoint API yang sesuai
+        if (!response.ok) {
+          throw new Error('Something went wrong'); // Tangani error jika response tidak berhasil
+        }
+        const result = await response.json(); // Ambil data JSON dari response
+        setData(result); // Simpan data ke state
+      } catch (err) {
+        setError(err.message); // Tangani error dengan menampilkan pesan error
+      }
+    };
+
+    fetchData(); // Panggil fungsi untuk mengambil data
+  }, [baseUrl]); // Memanggil useEffect hanya ketika baseUrl berubah
+
+  if (error) {
+    return <div>Error: {error}</div>; // Tampilkan error jika ada
+  }
+
+  if (!data) {
+    return <div>Loading...</div>; // Tampilkan loading jika data belum ada
+  }
 
   return (
     <div className="container-about">
-      {/* Kolom Kanan (opsional, bisa digunakan untuk konten lain) */}
-      <div >
-        <p className="text-about">Informasi tambahan atau widget lainnya </p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <div>
+        <p className="text-about">Informasi tambahan atau widget lainnya</p>
+        {/* Menampilkan data yang diterima dari API */}
+        <p>{data.description}</p> {/* Misalnya, jika data mengandung field 'description' */}
       </div>
     </div>
   );
 }
-
 
 export default About;
