@@ -31,13 +31,18 @@ def FetchDbToJson(db_config):
     mydb = mysql.connector.connect(**db_config)
     mycursor = mydb.cursor(dictionary=True)
 
-    sql = "SELECT * FROM articles"
+    # Select all columns except 'date'
+    sql = """
+    SELECT id, title, source, url, image, content, embedding, cleaned, title_index, 
+           cluster, bias, hoax, ideology 
+    FROM articles
+    """
     mycursor.execute(sql)
     articles = mycursor.fetchall()
 
     mycursor.close()
     mydb.close()
-    return articles    
+    return articles
 
 def GetEmbedding(data, db_config):
     with app.test_client() as client:
@@ -226,7 +231,7 @@ test_data = FetchDbToJson(db_config)
 
 # Jalankan model bias, hoax, bersihin, ideologi, untuk masing" artikel, kemudian update ke database.
 RunModelandUpdateDB(test_data, db_config) 
-GetEmbedding(test_data, db_config)
+# GetEmbedding(test_data, db_config)
 
 # Kelompokkan data ke title_index (Artikel yang ceritanya sama = 1 List), update ke database
 # Outputnya [  [1,2,3], [4,5,6] ], dimana 1 2 3 adalah artikel yang ceritanya sama, 4 5 6 adalah artikel yang ceritanya sama
