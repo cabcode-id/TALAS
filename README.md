@@ -179,7 +179,42 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
   }
   ```
 
----
+
+### Process All Articles
+- **URL**: `/process-all`
+- **Method**: POST
+- **Description**: Process input text articles to group, generate titles, clusters/categories, summaries, and bias analysis for each group
+
+#### Request Body
+```json
+[
+  {
+    "title": "string",
+    "content": "string",
+    "embedding": [0.0, 0.1, 0.2]
+  }
+]
+```
+
+#### Response Body
+```json
+[
+  {
+    "title": "Generated Group Title",
+    "modeCluster": "Cluster/Category Name",
+    "summary_liberalism": "Liberal perspective summary",
+    "summary_conservative": "Conservative perspective summary",
+    "analysis": "Bias and content analysis details"
+  }
+]
+```
+
+#### Possible Responses
+- **200 OK**: Successfully processed and grouped articles
+- **400 Bad Request**: Invalid input data
+- **500 Internal Server Error**: Processing error
+
+
 
 ## Named Entity Recognition (NER)
 ### 1. **Main NER Page**
