@@ -404,7 +404,6 @@ def title():
 
         response = {
             'title': title,
-            'embedding': df['embedding'].tolist()
         }
         return jsonify(response), 200
 
@@ -458,7 +457,6 @@ def summary():
         response = {
             'summary_liberalism': summary_liberalism,
             'summary_conservative': summary_conservative,
-            'cleaned': df['cleaned'].tolist()
         }
         return jsonify(response), 200
 
