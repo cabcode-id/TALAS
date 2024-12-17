@@ -14,7 +14,7 @@ def test_endpoint(endpoint, article):
         )
         return response.json[endpoint]
 
-# Special Endpoints (summary, separate into clusters, embeddings)
+# Special Endpoints (summary, antipode)
 def test_summary_endpoint(test_data):
     """Test the /summary endpoint."""
     with app.test_client() as client:
@@ -24,7 +24,15 @@ def test_summary_endpoint(test_data):
             content_type='application/json'
         )
         return response.json['summary_liberalism'], response.json['summary_conservative']
-
+        
+def test_antipode_endpoint(test_data):
+    with app.test_client() as client:
+        response = client.post(
+            '/antipode',
+            data=json.dumps(test_data),
+            content_type='application/json'
+        )
+        print(response.json)
 # =============================================================================================
 
 def FetchDbToJson(db_config):
@@ -259,8 +267,8 @@ db_config = {
 
 # Contoh endpoint untuk banyak artikel
 
-with open('sameExample2.json', 'r') as f:
-    test_data = json.load(f)
+# with open('sameExample2.json', 'r') as f:
+#     test_data = json.load(f)
 
 # # print(test_endpoint('title', test_data)) 
 # print(test_endpoint('modeCluster', test_data))
@@ -269,14 +277,22 @@ with open('sameExample2.json', 'r') as f:
 # print(test_endpoint('embedding', test_data))
 # print(test_summary_endpoint(test_data))
 
-
-def test_process_all_endpoint(test_data):
-    with app.test_client() as client:
-        response = client.post(
-            '/process-all',
-            data=json.dumps(test_data), 
-            content_type='application/json'
-        )
-        return response.json
+# def test_process_all_endpoint(test_data):
+#     with app.test_client() as client:
+#         response = client.post(
+#             '/process-all',
+#             data=json.dumps(test_data), 
+#             content_type='application/json'
+#         )
+#         return response.json
     
-print(test_process_all_endpoint(test_data))
+# print(test_process_all_endpoint(test_data))
+
+antipode_data = {
+  "article": {
+        'content': "Menteri Koordinator Bidang Kemaritiman dan Investasi (Menko Marves) Luhut Binsar Panjaitan menargetkan Indonesia mampu memproduksi sendiri baterai lithium  untuk menunjang  kendaraan listrik di dalam negeri. Bahan baku baterai lithium itu nantinyaberasal dari Indonesia yakni nikel. Target itu juga telah disampaikan di depan para pimpinan pebisnis di Indonesia dan Asia yang hadir dalam acara DBS Asian Insights Forum 2023, Rabu (15\/3) lalu. Saya sampaikan bahwa pada tahun 2025, kami akan mampu memproduksi baterai lithium sendiri. Sehingga kita akan menjadi produsen baterai lithium terbesar ketiga di dunia pada tahun 2027 atau 2028 nanti. ' So, don't look down on Indonesia ' kata Luhut dalam unggahan di Instagram @ luhut.pandjaitan , Sabtu (18\/3). Luhut mengatakan target tersebut bukan sekedar angan-angan belaka, melainkan data menunjukkan bahwa ada investasi senilai US$31,9 miliar atau setara Rp490,4 triliun (asumsi kurs Rp15.375 per dolar AS) untuk pengembangan supply chain industri baterai di Indonesia hingga tahun 2026. [Gambas:Instagram] Indonesia, lanjut Luhut, juga telah menarik investasi asing langsung sebesar US$45,6 miliar atau setara Rp701,1 triliun tahun lalu, yang kemudian menurutnya merupakan rekor tertinggi baru sejak tahun 2000. Belum lagi nilai ekspor industri nikel kami mencapai US$33,8miliar pada tahun 2022, di mana US$ 14,3 miliar dihasilkan dari ekspor besi dan baja,\" kata dia. Luhut menilai 'keberhasilan' itu terwujud lantaran keteguhan Presiden Joko Widodo untuk tetap melanjutkan kebijakan hilirisasi industri dalam mengolah bahan baku di dalam negeri untuk nilai tambah yang lebih tinggi. Lebih lanjut, Luhut mengaku data-data tersebut sudah ia sampaikan juga kepada IMF yang bertandang ke kantornya beberapa waktu lalu. Luhut pun mengatakan kepada mereka, untuk saat ini, Indonesia sudah bisa mengekspor besi dan baja, bukan bijih nikel lagi. Luhut juga menargetkan Indonesia akan melakukan ekspor timah, bauksit, tembaga, dan bahan baku lainnya. Ia menginginkan agar perubahan besar ini harus dilihat oleh negara-negara maju. \" This is their problem . Selalu melihat negara berkembang seperti Indonesia adalah negara yang mereka tahu dua puluh atau lima belas tahun yang lalu. Dengan memberlakukan larangan ekspor nikel, kita mempunyai kekuatan untuk menghasilkan energi hijau yang sudah kita cita-citakan sejak lama, jelasnya. Luhut pun meminta agar seluruh masyarakat Indonesia berbangga hati. Kendati demikian, ia juga mewanti-wanti bahwa Indonesia tidak melawan negara manapun, melainkan justru bersahabat dengan siapa saja. Indonesia menurutnya terbuka dan mempersilakan negara-negara lain untuk berinvestasi serta membangun industri pengolahan pertambangan di dalam negeri. \"Dengan catatan bahwa kami juga punya aturan main atau regulasi yang harus mereka penuhi. Menjadi negara maju adalah hak setiap negara, kewajiban kita adalah memperjuangkannya, ujar Luhut. [Gambas:Video CNN]"
+  },
+  "df": test_data
+}
+
+test_antipode_endpoint(antipode_data)
