@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import os
+import ast
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # resolves warning
 
 # Third-party libraries
@@ -351,7 +352,13 @@ def getTitle(documents):
 
 def dfEmbedding(df):
     df['embedding'] = df.apply(
-        lambda row: row['embedding'] if isinstance(row['embedding'], (list, np.ndarray)) else Settings.embed_model.get_text_embedding(row['content']),
+        lambda row: (
+            row['embedding'] 
+            if isinstance(row['embedding'], (list, np.ndarray)) 
+            else ast.literal_eval(row['embedding'])
+            if isinstance(row['embedding'], str) 
+            else Settings.embed_model.get_text_embedding(row['content'])
+        ),
         axis=1
     )
 
@@ -372,10 +379,7 @@ def get_embedding():
         if 'content' not in df.columns:
             return jsonify({"error": "Input must contain 'content' field"}), 400
             
-        df['embedding'] = df.apply(
-            lambda row: row['embedding'] if isinstance(row.get('embedding'), (list, np.ndarray)) else Settings.embed_model.get_text_embedding(row['content']),
-            axis=1
-        )
+        df = dfEmbedding(df)
 
         # Return embeddings
         return jsonify({"embedding": df['embedding'].tolist()}), 200
@@ -613,6 +617,66 @@ def processAll():
 
         # Step 3: Return the results as a list
         return jsonify(results), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+def topSimilarArticles(textEmbedding, df, n):
+    similarities = cosine_similarity([textEmbedding],list(df['embedding']))[0]
+
+
+    similarities = list(enumerate(similarities))
+    topSimilar = sorted(similarities, key=lambda x: x[1], reverse=True)
+    topSimilar = topSimilar[:n]
+
+    article_idx = [i[0] for i in topSimilar]
+    similarity_values = [i[1] for i in topSimilar]
+
+    recommendations = df.iloc[article_idx].copy()
+    recommendations['similarity'] = similarity_values
+    return recommendations
+
+@app.route('/antipode', methods=['POST'])
+def antipode():
+    try:
+        data = request.get_json()
+
+        # Input harus {'article': {'title': '...', 'content': '...'}, 'df': [{'title': '...', 'content': '...'}, ...]}
+        if 'article' not in data or 'df' not in data:
+            return jsonify({"error": "Request must contain 'article' and 'df' fields"}), 400
+
+        # Extract article and dataframe
+        article = data['article']
+        df_data = data['df']
+
+        # Validate the article
+        if not isinstance(article, dict) or 'content' not in article:
+            return jsonify({"error": "Article must be a dictionary with 'content' fields"}), 400
+
+        # Validate the DataFrame input
+        if not isinstance(df_data, list):
+            return jsonify({"error": "df must be a list of news articles"}), 400
+
+        df = pd.DataFrame(df_data)
+
+        # Ensure the DataFrame contains the required fields
+        for col in ['title', 'content']:
+            if col not in df.columns:
+                return jsonify({"error": f"df must contain {col} field"}), 400
+
+        # Compute embedding for the article
+        if 'embedding' not in article or not isinstance(article['embedding'], (list, np.ndarray)):
+            article['embedding'] = Settings.embed_model.get_text_embedding(article['content'])
+
+        # Dapatkan embedding dari df jika belum ada.
+        df = dfEmbedding(df)
+
+        # Calculate antipode embedding for the input article
+        antipode_embedding = -np.array(article['embedding'])
+
+        # Cari 2 artikel dalam df yang paling mirip dengan antipoda
+        recommendations = topSimilarArticles(antipode_embedding, df, 2)
+        return jsonify(recommendations['title'].tolist()), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
