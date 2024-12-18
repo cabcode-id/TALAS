@@ -1,144 +1,151 @@
-from flask import Flask, request, render_template, redirect
-import spacy
 import json
-from mysql.connector import connect, Error
+import spacy
+from flask import Flask, request, jsonify
+from spacy.training.example import Example
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+from googletrans import Translator
+from collections import Counter
+import re
+from rapidfuzz import fuzz
+from database import db
+from models import Feedback
+from config import Config
 
+# Setup Flask app
 app = Flask(__name__)
+app.config.from_object(Config)
 
-# Path to the spaCy model
-MODEL_PATH = "spacy model"
-nlp = spacy.load(MODEL_PATH)
+# Inisialisasi database
+db.init_app(app)
 
-# Function to connect to the MySQL database
-def connect_db():
-    """Establishes a connection to the MySQL database."""
-    try:
-        return connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="ner_feedback"
-        )
-    except Error as e:
-        print(f"Error while connecting to the database: {e}")
-        return None
+# Load Spacy Models
+nlp = spacy.load("en_core_web_sm")  # Model bahasa Inggris
+nlp_custom = spacy.load("spacy model")  # Model latih
+translator = Translator()
 
-@app.route('/')
-def index():
-    """Renders the home page."""
-    return render_template("ner_home.html")
+# Validasi entitas (aturan filtering)
+VALID_LABELS = [
+    'PERSON', 'ORGANIZATION', 'LOCATION', 'ORG', 'GPE', 'LOC', 'EVENT', 'PRODUCT', 'LAW', 'WORK_OF_ART', 
+    'NORP', 'FAC'
+]
 
-@app.route('/process', methods=["POST"])
-def process_text():
-    """Processes the input text, applies spaCy NLP model, and extracts named entities."""
-    text = request.form["input_data"]
-    doc = nlp(text)
-    entities_data = [(ent.text, ent.label_) for ent in doc.ents]
-    return render_template("ner_home.html", input_text=text, results=entities_data)
+# Menggunakan stopword dari Sastrawi
+factory = StopWordRemoverFactory()
+STOPWORDS = set(factory.get_stop_words())
 
-@app.route('/report', methods=["POST"])
-def report():
-    """Handles the feedback submission, updates entities, and stores them in the database."""
-    text = request.form["input_text"]
-    corrected_entities = request.form.getlist("corrected_entities[]")
-    entity_labels = request.form.getlist("entity_labels[]")
-    removed_entities = request.form.getlist("removed_entities[]")
-    action = request.form.get("action")
-
-    # Filter out removed entities
-    filtered_entities = [
-        corrected_entities[i] for i in range(len(corrected_entities))
-        if corrected_entities[i] not in removed_entities
-    ]
-
-    if action == "change":
-        # Save feedback and update spaCy model with corrected entities
-        feedback_data = {
-            "text": text,
-            "corrected_entities": filtered_entities,
-            "entity_labels": [entity_labels[i] for i in range(len(corrected_entities)) if corrected_entities[i] not in removed_entities]
-        }
-        save_feedback_to_database(feedback_data)
-        update_entity_ruler(feedback_data)
+# Fungsi untuk mendeteksi kata dengan huruf awal kapital
+def exclude_capitalized_words(text):
+    capitalized_words = re.findall(r'\b[A-Z][a-zA-Z]*\b', text)
+    placeholders = {word: f"__PLACEHOLDER_{i}__" for i, word in enumerate(capitalized_words)}
     
-    # Save the corrected keywords to the database
-    save_keywords_to_database(text, filtered_entities)
+    for word, placeholder in placeholders.items():
+        text = text.replace(word, placeholder)
+    
+    return text, placeholders
 
-    return render_template("article.html", text=text, keywords=filtered_entities)
+def restore_capitalized_words(text, placeholders):
+    for word, placeholder in placeholders.items():
+        text = text.replace(placeholder, word)
+    
+    return text
 
-@app.route('/clear', methods=["POST"])
-def clear_data():
-    """Clears the input data and renders the home page again."""
-    return render_template("ner_home.html")
+# Fungsi untuk menghitung top 10 keyword
+def normalize_text(text):
+    return re.sub(r'\s+', '', text.lower())
 
-def save_keywords_to_database(text, keywords):
-    """Saves the extracted keywords (patterns only) to the database."""
-    conn = connect_db()
-    if not conn:
-        print("Failed to connect to the database!")
-        return
+def calculate_top_keywords(keyword):
+    normalized_counter = Counter()
+    original_map = {}
 
-    try:
-        cursor = conn.cursor()
-        keywords_json = json.dumps(keywords)
-        query = "INSERT INTO feedback (text, entities) VALUES (%s, %s)"
-        cursor.execute(query, (text, keywords_json))
-        conn.commit()
-        print("Keywords successfully saved.")
-    except Error as e:
-        print(f"Error while saving keywords: {e}")
-    finally:
-        conn.close()
+    for entity in keyword:
+        norm_text = normalize_text(entity)
+        if norm_text not in STOPWORDS:
+            normalized_counter[norm_text] += 1
+            original_map[norm_text] = entity
 
-def save_feedback_to_database(feedback_data):
-    """Saves detailed feedback, including corrected entities, to the database."""
-    conn = connect_db()
-    if not conn:
-        print("Failed to connect to the database!")
-        return
+    top_keywords = normalized_counter.most_common(10)
+    return [{"keyword": original_map[key], "count": count} for key, count in top_keywords]
 
-    try:
-        cursor = conn.cursor()
-        feedback_json = json.dumps(feedback_data['corrected_entities'])
-        query = "INSERT INTO feedback (text, corrected_entities) VALUES (%s, %s)"
-        cursor.execute(query, (feedback_data['text'], feedback_json))
-        conn.commit()
-        print("Feedback successfully saved.")
-    except Error as e:
-        print(f"Error while saving feedback: {e}")
-    finally:
-        conn.close()
+# Route untuk mengambil data mentah dan melakukan anotasi
+@app.route('/annotate', methods=['GET'])
+def annotate_data():
+    feedback_data = Feedback.query.filter(Feedback.keyword == None).all() 
+    annotated_data = []
 
-def update_entity_ruler(feedback_data):
-    """Updates the spaCy EntityRuler with new patterns based on the feedback."""
-    ruler = nlp.get_pipe("entity_ruler") if "entity_ruler" in nlp.pipe_names else nlp.add_pipe("entity_ruler", last=True)
-    patterns = [{"label": feedback_data['entity_labels'][i], "pattern": feedback_data['corrected_entities'][i]}
-                for i in range(len(feedback_data['corrected_entities']))]
-    ruler.add_patterns(patterns)
-    nlp.to_disk(MODEL_PATH)
+    for record in feedback_data:
+        try:
+            text, placeholders = exclude_capitalized_words(record.content)
+            text_en = translator.translate(text, src='id', dest='en').text
+            doc_default = nlp(text_en)
+            doc_custom = nlp_custom(record.content)
 
-@app.route('/article/<int:id>')
-def view_article(id):
-    """Views a specific article and its associated keywords based on the article ID."""
-    conn = connect_db()
-    if not conn:
-        return "Failed to connect to the database!"
+            keyword = []
 
-    try:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT text, entities FROM feedback WHERE id = %s", (id,))
-        article = cursor.fetchone()
-        if not article:
-            return "Article not found!"
-        
-        # Load the saved keywords (patterns) from the database
-        keywords = json.loads(article['entities'])
-        return render_template("article.html", text=article['text'], keywords=keywords)
-    except Error as e:
-        print(f"Error retrieving article: {e}")
-        return "Error retrieving article!"
-    finally:
-        conn.close()
+            # Ambil entitas dari model default (en_core_web_sm) dan terjemahkan ke bahasa Indonesia
+            for ent in doc_default.ents:
+                if len(ent.text) > 2 and ent.label_ in VALID_LABELS:
+                    translated_entity = translator.translate(ent.text, src='en', dest='id').text
+                    if translated_entity.lower() not in STOPWORDS and translated_entity in record.content and \
+                            not any(fuzz.ratio(translated_entity.lower(), existing_ent['text'].lower()) > 80 for existing_ent in keyword):
+                        start = record.content.index(translated_entity)
+                        end = start + len(translated_entity)
+                        keyword.append({
+                            "start": start,
+                            "end": end,
+                            "label": ent.label_,
+                            "text": translated_entity
+                        })
+
+            # Ambil entitas dari model custom (spacy model dalam bahasa Indonesia)
+            for ent in doc_custom.ents:
+                if len(ent.text) > 2 and ent.label_ in VALID_LABELS:
+                    if not any(fuzz.ratio(ent.text.lower(), existing_ent['text'].lower()) > 80 for existing_ent in keyword):
+                        start = record.content.index(ent.text)
+                        end = start + len(ent.text)
+                        keyword.append({
+                            "start": start,
+                            "end": end,
+                            "label": ent.label_,
+                            "text": ent.text
+                        })
+
+            text_en = restore_capitalized_words(text_en, placeholders)
+
+            # Simpan anotasi ke dalam database 
+            record.keyword = json.dumps(keyword)
+            db.session.commit()
+
+            annotated_data.append({
+                'id': record.id,
+                'content': record.content,
+                'keyword': keyword,  
+            })
+
+        except Exception as e:
+            print(f"Error processing record {record.id}: {str(e)}")
+
+    return jsonify(annotated_data)
+
+# Route untuk menghitung top 10 keyword dari seluruh kolom keyword
+@app.route('/top_keywords', methods=['GET'])
+def top_keywords():
+    feedback_data = Feedback.query.filter(Feedback.keyword.isnot(None)).all()  
+    all_keyword = []
+
+    for record in feedback_data:
+        try:
+            keyword = json.loads(record.keyword)  
+
+            for entity in keyword:
+                if entity['text'].lower() not in STOPWORDS:
+                    all_keyword.append(entity['text'])
+
+        except Exception as e:
+            print(f"Error processing record {record.id}: {str(e)}")
+
+    top_keywords = calculate_top_keywords(all_keyword)
+
+    return jsonify(top_keywords)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
