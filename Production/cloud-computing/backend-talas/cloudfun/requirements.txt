@@ -1,0 +1,4 @@
+pymysql
+requests
+google-cloud-firestore
+cryptography
