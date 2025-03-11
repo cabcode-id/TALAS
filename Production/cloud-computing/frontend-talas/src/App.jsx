@@ -6,8 +6,8 @@ import Navbar from './components/Navbar';
 import FormLogin from './components/FormLogin';
 import News from './components/News';
 import ToggleMenu from './components/ToggleMenu';
-import About from './pages/about';
-import Finance from "./pages/finance";
+import About from './pages/About';
+import Finance from "./pages/Finance";
 // import Footer from "./components/Footer"
 import International from "./pages/International";
 import Science from './pages/Science';
