@@ -1,0 +1,524 @@
+---
+title: "Sentiment Finance "
+author: "Hairul Yasin"
+output:
+  html_document:
+    css: assets/style.css
+    html_document:
+    toc: true
+    toc_float:
+      collapsed: true
+    number_sections: true
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+# knitr::include_graphics("assets/code.png")
+# chunk options
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE
+)
+
+
+options(scipen = 99)
+library(dplyr) # data wrangling
+library(lubridate) # date manipulation
+library(ggplot2)
+library(tidyr)
+library(wordcloud)
+library(tm)
+library(textclean)
+```
+
+# Pendahuluan {.tabset}
+
+Laporan ini bertujuan untuk mengklasifikasikan sentimen pada data teks terkait dengan layanan keuangan. Tujuan utama laporan ini adalah untuk menganalisis dan memodelkan sentimen yang terkandung dalam data teks, sehingga dapat memprediksi dengan akurat sentimen yang muncul, seperti positif, negatif terhadap layanan keuangan.
+
+## Latar Belakang
+
+Sentimen pelanggan dalam industri layanan keuangan memiliki peran yang sangat penting. Perasaan positif atau negatif pelanggan dapat memengaruhi reputasi perusahaan, keputusan investasi, dan kepuasan pelanggan secara keseluruhan. Oleh karena itu, memahami sentimen yang terkandung dalam data teks pelanggan sangat berharga.
+
+```{r out.width="`100%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("assets/images.jpeg")
+```
+
+## Tujuan
+
+Tujuan dari pembuatan laporan ini adalah untuk mengklasifikasikan sentimen dari data teks yang berkaitan dengan layanan keuangan. Dalam laporan ini, kami akan menggunakan teknik pemrosesan teks dan pemodelan yang sesuai untuk menganalisis data teks yang ada. Beberapa target dan prediktor yang mungkin kami gunakan untuk mencapai tujuan ini adalah:
+
+-   Target : `label`.
+-   Prediktor : ***Semua variabel***, `kecuali label`.
+
+# Read Data
+
+Dalam bagian ini, kita akan membaca data dan melakukan proses pembersihan (jika diperlukan).
+
+## Memuat dataset latih dan dataset uji
+
+Pertama, kita akan memuat dataset latih dan dataset uji yang akan digunakan dalam analisis. Dataset latih akan digunakan untuk melatih model dan dataset uji akan digunakan untuk menguji performa model yang telah dilatih.
+
+
+```{r}
+data1 <- read.csv("train_data.csv")
+data2 <- read.csv("test_data.csv")
+
+# Menggabungkan train_data dan test_data menjadi satu dataset
+train_data <- rbind(data1, data2)
+
+# write.csv(train_data, "data_train.csv", row.names = TRUE)
+```
+
+# Exploratory Data Analysis
+
+## Mengeksplorasi struktur data dan variabel
+
+Selanjutnya, kita akan melakukan eksplorasi terhadap struktur data dan variabel yang ada.
+
+```{r, echo=FALSE}
+head(train_data)
+```
+
+💡Data train memiliki 1,377 *rows* dengan total *Features/columns* 3.
+
+-   *label* : Merupakan label Positive/Negative untuk setiap artikel
+-   *en_text* : Berisi konten artikel dalam bahasa ingris.
+-   *id_text* : Berisi konten artikel dalam bahasa indonesia
+
+## Melihat tipe data
+
+```{r, echo=FALSE}
+# Melihat jenis data dari setiap variabel
+str(train_data)
+```
+
+💡 Tipe datanya sudah sesuai dengan kasus kali ini, namun perlu dilakukkan penyesuaian lebih lanjut.
+
+## Cek missing values
+
+Kemudian, kita akan memeriksa apakah terdapat missing values atau nilai yang hilang pada dataset. Jika ada, kita akan menangani missing values tersebut dengan melakukan imputasi atau penghapusan nilai yang hilang, sesuai dengan kebutuhan analisis kita.
+
+```{r}
+# Memeriksa missing values pada dataset latih
+colSums(is.na(train_data))
+```
+
+💡 `tidak ada missing values` dalam dataset.
+
+## Mengeksplor variabel target 
+
+```{r}
+# Menghitung jumlah frekuensi untuk kategori positive dan negative
+positive_freq <- sum(train_data$label == "positive")
+negative_freq <- sum(train_data$label == "negative")
+
+# Menghitung persentase untuk positive dan negative
+positive_percentage <- positive_freq / nrow(train_data) * 100
+negative_percentage <- negative_freq / nrow(train_data) * 100
+
+# Membuat data frame untuk pie chart
+pie_data <- data.frame(Category = c("Positive", "Negative"),
+                       Frequency = c(positive_freq, negative_freq),
+                       Percentage = c(positive_percentage, negative_percentage))
+
+# Membuat plot pie chart
+library(ggplot2)
+ggplot(pie_data, aes(x = "", y = Frequency, fill = Category)) +
+  geom_bar(stat = "identity", width = 1, alpha = 0.7) +
+  coord_polar("y", start = 0) +
+  labs(x = NULL, y = NULL, fill = "label") +
+  ggtitle("Perbandingan Frekuensi Total antara Sentimen Positif dan Negatif") +
+  theme_minimal() +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  geom_text(aes(label = paste0(round(Percentage, 1), "%")), position = position_stack(vjust = 0.5))
+
+```
+
+💡 
++ Mayoritas sentimen dalam data adalah positif, mengindikasikan optimisme dalam lanskap finansial yang dianalisis. 
++ Perlu memperhatikan sentimen negatif, yang bisa menjadi sumber risiko atau perhatian potensial dalam analisis finansial.
+
+## Menganalisis karakteristik teks terkait *negative*
+
+kali ini saya mau melihat karakteristik teks yang terkait dengan pesan *negative* menggunakan visualisasi `wordcloud`
+
+```{r}
+# Filter data untuk kategori "negative" atau pesan berdampak buruk
+negative_text <- train_data$id_text[train_data$label == "negative"]
+
+# Menggabungkan semua teks negatif menjadi satu string
+negative_text <- paste(negative_text, collapse = " ")
+
+# Menghapus kata-kata yang tidak relevan atau umum dalam teks negatif
+custom_stopwords <- c("dan", "atau", "ini", "itu", "dari", "dengan", "ke", "di", "untuk")
+
+# Membuat wordcloud untuk teks negatif dengan batasan kata
+wordcloud(negative_text, stopwords = custom_stopwords, max.words = 100)
+
+```
+
+# Data Preprocessing
+
+💡Dalam kasus ini, saya akan melakukan preprocesing pada kolom *id_text* menggunakan pustaka `textclean`. Preprocess data teks melibatkan langkah-langkah seperti tokenisasi, pembersihan tanda baca & emoticon, mengubah ke huruf kecil, dan lainnya untuk mempersiapkan data sebelum dilakukan analisis teks lebih lanjut.
+
+## Cek apakah ada emoticon dan punctuation?
+
+```{r}
+# Mengecek keberadaan emoticon dalam kolom "text"
+has_emoticon <- any(stringr::str_detect(train_data$id_text, ":\\)|:\\(|;\\)|;\\)|:D"))
+
+has_emoticon <- any(stringr::str_detect(train_data$en_text, ":\\)|:\\(|;\\)|;\\)|:D"))
+
+# Mengecek keberadaan punctuation dalam kolom "text"
+has_punctuation <- any(stringr::str_detect(train_data$id_text, "[[:punct:]]"))
+
+# Output hasil pengecekan
+has_emoticon
+has_punctuation
+
+```
+
+💡Setelah melakukan pengecekan pada data, tidak ditemukan adanya emotikon. Namun, ada tanda baca `punctuation` yang perlu ditangani.
+
+## Persiapkan paket untuk preprocessing
+
+```{r}
+# library(katadasaR)
+library(textclean) #meembersihkan teks
+library(tokenizers) #membagi teks menjadi token2
+library(wordcloud) #membuat wodcloud
+library(stringr) #memaipulasi teks / regex
+library(tm)
+head(train_data$id_text)
+```
+
+## Melakukan preprocess data untuk teks, langhkahnya :
+
+-   Mengubah teks menjadi huruf kecil.
+-   Mengganti kontraksi kata menjadi bentuk lengkap.
+-   Menghilangkan tanda baca dan karakter khusus dari teks, dll.
+
+```{r}
+# Mengubah teks menjadi huruf kecil.
+preprocessed_text  <- tolower(train_data$id_text)
+
+# Mengganti kontraksi kata menjadi bentuk lengkap.
+preprocessed_text <- replace_contraction(preprocessed_text)
+
+# Menghilangkan karakter selain alphanumeric dan spasi.
+preprocessed_text <- gsub("[^[:alnum:][:space:]]", "", preprocessed_text)
+
+# Menghilangkan tanda baca.
+preprocessed_text <- gsub("[[:punct:]]", "", preprocessed_text)
+
+# Menghilangkan angka.
+preprocessed_text <- gsub("\\d+", "", preprocessed_text)
+
+# Membersihkan teks dari karakter yang tidak diinginkan.
+preprocessed_text <- strip(preprocessed_text)
+
+head(preprocessed_text)
+```
+
+## Membuat document-term matrix (DTM)
+
+Setelah itu, saya membuat document-term matrix (DTM) untuk mewakili data teks dengan menggunakan Corpus dan DocumentTermMatrix. DTM membantu mengubah teks menjadi bentuk matriks, Dengan adanya DTM, kita dapat melanjutkan dengan analisis teks lebih lanjut, seperti pemodelan teks menggunakan algoritma seperti Naive Bayes, Random Forest, atau SVM untuk mengklasifikasikan news menjadi positif atau negatif.
+
+```{r}
+# Mengubah teks menjadi Corpus.
+corpus <- Corpus(VectorSource(preprocessed_text))
+
+# Membuat Document Term Matrix (DTM).
+dtm <- DocumentTermMatrix(corpus)
+
+# Menampilkan hasil DTM
+dtm
+```
+
+`DTM (DocumentTermMatrix)` menunjukkan bahwa dalam dataset berisi 2004 pesan teks, terdapat 3931 kata yang berbeda yang muncul. Kepadatan DTM ini adalah 100%, artinya setiap sel dalam matriks memiliki nilai (tidak ada entri kosong). DTM ini memberikan gambaran detail tentang distribusi kata dalam dataset teks, yang bisa digunakan untuk analisis teks lebih lanjut.
+
+# Model and Evaluation
+
+Kali ini saya akan coba membandingkan beberapa pendekatan metode untuk tugas klasifikasi teks (misalnya: Naive Bayes, Random Forest, SVM)
+
+## Cross Validation
+
+Dataset dibagi menjadi 70% untuk train dan 30% untuk test dengan fungsi `createDataPartition`.
+
+```{r}
+# Memuat library yang diperlukan
+library(caret)
+library(randomForest)
+library(e1071)
+library(kernlab)  # Untuk SVM
+library(tm)       # Untuk Text Mining (membuat Corpus dan DTM)
+
+# Convert response variable to a factor
+train_data$label <- factor(train_data$label)
+
+# Split data menjadi data training dan data testing(validasi)
+set.seed(123)
+train_index <- createDataPartition(train_data$label, p = 0.7, list = FALSE)
+train_set <- train_data[train_index, ]
+test_set <- train_data[-train_index, ]
+```
+
+## Preprocessing pada data yang telah dibagi dan data test
+
+pada tahap ini saya melakukan beberapa pendekatan untuk membersihkan data yang sudah di split, seperti : `konversi teks menjadi huruf kecil, penghilangan kontraksi, menghapus angka, tanda baca, dan kata-kata umum menggunakan *stopword*`. kali ini `saya tidak melakukan normalisasi` karena model yang digunakan untuk klasifikasi teks (Naive Bayes, Random Forest, dan Support Vector Machine) tidak memerlukan normalisasi pada data masukan (DTM).
+
+```{r, echo=FALSE}
+# Daftar kata bawaan untuk bahasa Indonesia
+stopwords_id <- c("dan", "atau", "adalah", "dari", "di", "ke", "sebuah", "itu", "ini", "yang", "untuk", "dengan", "pada", "tidak", "juga", "akan", "saya", "kita", "anda", "dia", "mereka", "kami", "maka", "lagi", "sudah", "harus", "hanya", "saja", "sekarang", "sebagai", "bagi", "tersebut", "menjadi", "bisa", "seperti", "belum", "lebih", "dalam", "yang", "kepada", "oleh", "ada", "apakah", "itu", "dalam", "yaitu", "atau", "sehingga", "mengapa", "karenanya", "sebab", "hingga", "yakni", "namun", "tetapi", "sebagai", "selain", "seraya", "serta", "lalu", "setelah", "sebelum", "bahkan", "padahal", "sebab", "karena", "misalnya", "yakni", "adalah", "ia", "orang", "orangnya", "dilakukan", "tersebut", "pula", "dia", "berarti", "maksud", "tahukah", "mengetahui", "bahkan", "sebenarnya", "sebetulnya", "juga", "pun", "tersebut", "selain", "disini", "disana", "sini", "sana", "begitu", "demikian", "begitulah", "demikianlah", "tetapi", "hanya", "jika", "sebab", "karena", "memang", "saja", "demi", "pada", "bahkan", "selain", "terkecuali", "bagaimana", "bagi", "dalam", "diantara", "setiap", "sedangkan", "hingga", "sehingga", "sampai", "dengan", "tanpa", "dalam", "luar", "luar", "dalam", "menurut", "berdasarkan", "walaupun", "serta", "dan", "jika", "ketika", "sejak", "sementara", "kemudian", "selagi", "selama", "hingga", "sehingga", "sampai", "maka", "lalu", "setelah", "sebelum", "karena", "sebab", "oleh", "agar", "supaya", "untuk", "sehingga", "supaya", "untuk", "demi", "dalam", "pada", "ketika", "karena", "menurut", "dengan", "berdasarkan", "semenjak", "sementara", "kemudian", "selagi", "selama", "sampai", "juga", "sekarang", "yang", "itu", "sana", "sini", "kemudian", "selagi", "sedangkan", "selain", "menurut", "sementara", "sampai", "setelah", "sebelum", "dalam", "pada", "ketika", "sejak", "sehingga", "sebab", "karena", "agar", "supaya", "untuk", "demi", "bagi", "atas", "bawah", "antara", "di", "ke", "dari", "dengan", "pada", "untuk", "oleh", "seperti", "terhadap", "selain", "setelah", "sebelum", "bagian", "dalam", "berhubungan", "seputar", "berkenaan", "terkait", "perihal", "mengenai", "yang", "itu", "ini", "sana", "sini", "mari", "sini", "sana", "masing", "masing-masing", "sederhana", "kompleks", "mudah", "sulit", "umum", "khusus", "banyak", "sedikit", "ringan", "berat", "luas", "sempit", "lama", "pendek", "tinggi", "rendah", "besar", "kecil", "kuat", "lemah", "baru", "lama", "umur", "belakang", "depan", "kanan", "kiri", "dalam", "luar", "mula", "akhir", "atas", "bawah", "pernah", "belum", "masih", "sudah", "lagi", "masih", "hanya", "hampir", "sebentar", "lama", "tidak", "belom", "sampai", "selalu", "kadang", "sering", "jarang", "segera", "bisa", "dapat", "terima", "kasi", "tolong", "pantas", "tenggang", "akal", "pintar", "tolong", "mohon", "ingin", "harap", "kita", "anda", "kami", "kalian", "mereka", "bersama", "sendiri", "tentu", "pasti", "malah", "bahkan", "barulah", "biasanya", "kebanyakan", "biasa", "kadang", "kadang-kadang", "terkadang", "biasanya", "mungkin", "mesti", "harus", "perlu", "wajib", "boleh", "tidak", "jangan", "mungkin", "tidak", "tak", "takut", "khawatir", "anak", "ibu", "bapak", "ayah", "suami", "istri", "anak", "cucu", "kakek", "nenek", "paman", "bibi", "sepupu", "saudara", "keluarga", "teman", "kawan", "sahabat", "dunia", "benua", "negara", "wilayah", "kota", "desa", "jalan", "gang", "rumah", "kantor", "sekolah", "universitas", "toko", "pasar", "tempat", "negeri", "timur", "barat", "utara", "selatan", "nusantara", "terang", "gelap", "laut", "daratan", "gunung", "bukit", "sungai", "danau", "rawa", "pantai", "pelabuhan", "gurun", "pulau", "terbuka", "tertutup", "padat", "sepi", "hijau", "merah", "kuning", "biru", "putih", "hitam", "emas", "perak", "besi", "dan", "atau", "adalah", "dari", "di", "ke", "sebuah", "itu", "ini", "yang")
+
+```
+
+```{r}
+library(tm) 
+
+test_data <- read.csv("validation_data.csv", stringsAsFactors = FALSE)
+
+
+# Preprocessing pada teks dataset yang akan diprediksi
+preprocess_text <- function(id_text) {
+  # Mengubah teks menjadi huruf kecil
+  text <- tolower(id_text)
+  
+  # Mengganti kontraksi kata menjadi bentuk lengkap
+  text <- replace_contraction(text)
+  
+  # Menghilangkan karakter selain alphanumeric dan spasi
+  text <- gsub("[^[:alnum:][:space:]]", "", text)
+  
+  # Menghilangkan tanda baca
+  text <- gsub("[[:punct:]]", "", text)
+  
+  # Menghilangkan angka
+  text <- gsub("\\d+", "", text)
+  
+  # Membersihkan teks dari karakter yang tidak diinginkan
+  text <- strip(text)
+  
+  return(text)
+}
+
+# Membuat Corpus dari data training dan data testing
+corpus_train <- Corpus(VectorSource(train_set$id_text))
+corpus_test <- Corpus(VectorSource(test_set$id_text)) #corpus_valid
+test_corpus <- Corpus(VectorSource(test_data$id_text))
+
+# Preprocessing Corpus
+
+# Buat daftar kata bawaan untuk bahasa Indonesia // tidak tau library/fungsinya
+
+stopwords_id <- c("dan", "atau", "adalah", "dari", "di", "ke", "sebuah", "itu", "ini", "yang")
+
+
+corpus_train <- tm_map(corpus_train, content_transformer(tolower))
+corpus_train <- tm_map(corpus_train, content_transformer(replace_contraction))
+corpus_train <- tm_map(corpus_train, removeNumbers)
+corpus_train <- tm_map(corpus_train, removePunctuation)
+corpus_train <- tm_map(corpus_train, removeWords, stopwords_id) # bagaimmana indonesia?
+corpus_train <- tm_map(corpus_train, stripWhitespace)
+
+corpus_valid <- tm_map(corpus_test, content_transformer(tolower))
+corpus_valid <- tm_map(corpus_test, content_transformer(replace_contraction))
+corpus_valid <- tm_map(corpus_test, removeNumbers)
+corpus_valid <- tm_map(corpus_test, removePunctuation)
+corpus_valid <- tm_map(corpus_test, removeWords, stopwords_id)
+corpus_valid <- tm_map(corpus_test, stripWhitespace)
+
+test_corpus <- tm_map(test_corpus, content_transformer(tolower))
+test_corpus <- tm_map(corpus_test, content_transformer(replace_contraction))
+test_corpus <- tm_map(test_corpus, removePunctuation)
+test_corpus <- tm_map(test_corpus, removeNumbers)
+test_corpus <- tm_map(test_corpus, removeWords, stopwords_id)
+test_corpus <- tm_map(test_corpus, stripWhitespace)
+
+# Membuat Document Term Matrix (DTM).
+dtm_train <- DocumentTermMatrix(corpus_train)
+dtm_valid <- DocumentTermMatrix(corpus_valid, control = list(dictionary = Terms(dtm_train))) # data_valid
+
+# Buat Document Term Matrix (DTM) untuk dataset uji
+dtm_test <- DocumentTermMatrix(test_corpus, control = list(dictionary = Terms(dtm_train)))
+dtm_test_mat <- as.matrix(dtm_test)
+
+# Konversi DTM menjadi matriksmethod
+dtm_train_mat <- as.matrix(dtm_train)
+dtm_valid_mat <- as.matrix(dtm_valid)
+```
+
+## Modeling
+
+saya menggunakan 3 model klasifikasi, yaitu `Naive Bayes, Random Forest, dan Support Vector Machine (SVM).` Evaluasi model dilakukan dengan menghitung akurasi pada data training dan data testing menggunakan predict dan mean.
+
+Pemilihan model untuk klasifikasi news didasarkan pada pertimbangan beberapa metode. Pertama, Naive Bayes dipilih karena sederhana dan efisien dalam mengatasi data teks. Kedua, Random Forest digunakan karena kekuatan sebagai model ensemble yang mengatasi overfitting dan cocok untuk data teks kompleks. Terakhir, SVM dipertimbangkan karena kemampuannya menemukan batas keputusan optimal dan dapat menangani data yang tidak linier.
+
+```{r}
+# Memilih model untuk dibandingkan
+models <- c("Naive Bayes", "Random Forest", "Support Vector Machine")
+
+# Inisialisasi list untuk menyimpan hasil model
+model_results <- list()
+
+# Looping untuk membangun dan mengevaluasi model
+for (model_name in models) {
+  # Membangun model menggunakan caret
+  model <- NULL
+  if (model_name == "Naive Bayes") {
+    model <- naiveBayes(as.matrix(dtm_train), train_set$label)
+  } else if (model_name == "Random Forest") {
+    model <- randomForest(as.matrix(dtm_train), train_set$label)
+  } else if (model_name == "Support Vector Machine") {
+    model <- svm(as.matrix(dtm_train), train_set$label)
+  }
+
+  # Evaluasi model pada data training
+  train_pred <- predict(model, dtm_train_mat)
+  train_acc <- mean(train_pred == train_set$label)
+  
+  # Evaluasi model pada data validasi
+  valid_pred <- predict(model, dtm_valid_mat)
+  valid_acc <- mean(valid_pred == test_set$label)
+  
+  # Simpan hasil evaluasi ke dalam list
+  model_results[[model_name]] <- list(train_accuracy = train_acc, valid_accuracy = valid_acc)
+}
+
+# Tampilkan hasil evaluasi model
+result_df <- data.frame(Model = character(), Training_Accuracy = numeric(), Validation_Accuracy = numeric(), stringsAsFactors = FALSE)
+
+for (model_name in models) {
+  cat("Model:", model_name, "\n")
+  cat("Training Accuracy:", model_results[[model_name]]$train_accuracy, "\n")
+  cat("Validation Accuracy:", model_results[[model_name]]$valid_accuracy, "\n\n")
+  
+  # Simpan hasil evaluasi ke dalam dataframe
+  result_df <- rbind(result_df, data.frame(Model = model_name,
+                                           Training_Accuracy = model_results[[model_name]]$train_accuracy,
+                                           Validation_Accuracy = model_results[[model_name]]$valid_accuracy,
+                                           stringsAsFactors = FALSE))
+}
+```
+
+Hasil evaluasi menunjukkan bahwa *Random Forest* memiliki akurasi yang sangat tinggi pada data training (99.0%) namun sedikit menurun pada data validasi (86.6%), mengindikasikan kemungkinan adanya overfitting. Meskipun begitu, model ini masih memiliki performa yang lebih baik pada data testing dibandingkan dengan model SVM dan Naive Bayes. Dengan demikian, model Random Forest mungkin merupakan pilihan terbaik untuk mengklasifikasikan teks dalam kasus ini.
+
+## Mengidentifikasi kata-kata penting
+
+Berikut kata-kata yang memiliki pengaruh besar dalam hasil prediksi menggunakan model Random Forest. Informasi ini sangat berharga karena dapat membantu kita dalam memahami faktor-faktor apa saja yang berperan dalam mempengaruhi hasil prediksi dan dapat digunakan untuk mengoptimalkan atau meningkatkan performa model.
+
+```{r}
+# Melatih model Random Forest pada data training
+
+model_rf <- randomForest(as.matrix(dtm_train), train_set$label)
+
+# Mendapatkan tingkat penting variabel dari model Random Forest
+rf_var_imp <- importance(model_rf)
+
+# Buat data frame untuk variable importance
+rf_var_imp_df <- data.frame(word = row.names(rf_var_imp), importance = rf_var_imp[, 1])
+
+# Mengurutkan dan memilih 15 kata-kata penting teratas
+rf_var_imp_df <- rf_var_imp_df %>%
+  arrange(desc(importance)) %>%
+  head(15)
+
+# Tampilkan kata-kata penting dari model Random Forest
+print(rf_var_imp_df)
+```
+
+```{r, echo=FALSE}
+# Load library
+library(ggplot2)
+
+# Buat plot kata-kata penting dari model Random Forest
+ggplot(rf_var_imp_df, aes(x = reorder(word, importance), y = importance, fill = importance)) +
+  geom_col() +
+  geom_text(aes(label = round(importance, 2)), vjust = -0.05, color = "red") +
+  coord_flip() +
+  labs(title = "Kata-kata Penting (Top 15) untuk Prediksi", x = NULL, y = "Importance") +
+  scale_fill_viridis_c() +
+  theme_minimal()
+
+```
+
+💡 Tingkat penting variabel menggambarkan seberapa besar kontribusi setiap kata terhadap prediksi. Semakin tinggi tingkat kepentingannya, semakin berpengaruh kata tersebut dalam proses pengambilan keputusan model.
+
+# Prediction Performance
+
+## Mengukur performa model pada dataset validasi 
+```{r}
+# Mengukur performa model pada dataset validasi
+valid_pred <- predict(model_rf, dtm_valid_mat)
+valid_cm <- confusionMatrix(valid_pred, test_set$label)  # Ganti test_set dengan valid_data
+
+# Menghitung akurasi, sensitivitas, spesifisitas, dan presisi pada dataset validasi
+valid_accuracy <- valid_cm$overall["Accuracy"]
+valid_sensitivity <- valid_cm$byClass["Sensitivity"]
+valid_specificity <- valid_cm$byClass["Specificity"]
+valid_precision <- valid_cm$byClass["Precision"]
+
+# Melaporkan performa model pada dataset validasi
+cat("Performa model pada dataset validasi:\n")
+cat("Akurasi:", valid_accuracy, "\n")
+cat("Sensitivitas:", valid_sensitivity, "\n")
+cat("Spesifisitas:", valid_specificity, "\n")
+cat("Presisi:", valid_precision, "\n\n")
+```
+## Mengukur performa model pada dataset uji (datatest) 
+
+```{r}
+# Evaluasi model terbaik pada dataset uji
+test_pred <- predict(model_rf, dtm_test_mat)
+test_pred <- factor(test_pred, levels = levels(test_set$label))
+
+# Jika level faktor test_pred dan test_data$label tidak sama, atur levelnya agar sama
+levels(test_pred) <- levels(test_set$label)
+
+test_cm <- confusionMatrix(test_pred, test_set$label)
+
+# Menghitung akurasi, sensitivitas, spesifisitas, dan presisi pada dataset uji
+test_accuracy <- test_cm$overall["Accuracy"]
+test_sensitivity <- test_cm$byClass["Sensitivity"]
+test_specificity <- test_cm$byClass["Specificity"]
+test_precision <- test_cm$byClass["Precision"]
+
+# Melaporkan performa model pada dataset uji
+cat("Performa model pada dataset uji:\n")
+cat("Akurasi:", test_accuracy, "\n")
+cat("Sensitivitas:", test_sensitivity, "\n")
+cat("Spesifisitas:", test_specificity, "\n")
+cat("Presisi:", test_precision, "\n")
+
+```
+## Presdiksi kata yang tidak benar dalam datatest
+
+
+Pada kode berikut, pengaturan jumlah kata yang muncul dalam wordcloud dilakukan dengan menggunakan fungsi `min.freq.` Argumen ini menentukan frekuensi minimum kata yang harus muncul agar dimasukkan ke dalam wordcloud. Kata-kata yang muncul dengan frekuensi lebih rendah dari nilai min.freq akan diabaikan.
+
+```{r}
+# Mengidentifikasi SMS yang diprediksi dengan tidak benar
+misclassified_sms <- test_data[test_pred != test_set$label, "id_text"]
+
+# head(misclassified_sms)
+
+# Buat Wordcloud dari teks yang diprediksi tidak benar
+wordcloud(misclassified_sms, scale = c(5, 0.5), min.freq = 2, random.order = FALSE, colors = brewer.pal(8, "Dark2"))
+```
+
+💡 Insight singkat dari hasil evaluasi performa model:
+
+- Model klasifikasi yang dibangun berhasil mencapai performa yang cukup baik pada dataset validasi dan dataset uji. Dengan *akurasi sekitar 86.6% pada dataset validasi dan 87.8% pada dataset uji*, model ini dapat mengklasifikasikan pesan dengan tepat. Selain itu, model juga memiliki sensitivitas dan spesifisitas yang tinggi, menunjukkan kemampuan yang baik dalam mengidentifikasi pesan positif dan negatif.
+- Performa presisi yang mencapai 90.19% pada dataset validasi dan 90.74% pada dataset uji menunjukkan tingkat ketepatan model dalam mengklasifikasikan pesan positif. Dengan demikian, model ini cukup dapat diandalkan untuk mengklasifikasikan news financial yang positif dan negatif
+
++++++++++++++++++++++
+
+*Singkatnya* meskipun persentase sentimen positif dalam dataset lebih tinggi, jumlah kata-kata tertentu yang umumnya terkait dengan sentimen negatif, seperti "turun," mungkin lebih sering muncul dalam teks. Ini mungkin tampak kontradiktif, tetapi ada beberapa penjelasan mungkin:
+
+Kemungkinan Adanya Dominasi Beberapa Kata: Meskipun jumlah sentimen positif lebih tinggi dalam persentase, mungkin ada beberapa kata kunci tertentu yang muncul lebih sering dalam konteks negatif, seperti "turun," yang mungkin menjadi kata kunci yang signifikan dalam teks berlabel negatif.
+
+maka dari itu kami rasa perlu menambah jumlah data, agar sentimen katanya lebih beragam dalam ekspresi,  sehingga tidak ada kata kunci negatif yang mendominasi persentase yang tinggi.
