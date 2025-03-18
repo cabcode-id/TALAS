@@ -225,11 +225,11 @@ def RunModelandUpdateDB(test_data, db_config):
 # =============================================================================================
 
 # Konfigurasi Database
-# db_config = {
-#     "host": "localhost",
-#     "user": "root",
-#     "database": "news"
-# }
+db_config = {
+    "host": "localhost",
+    "user": "root",
+    "database": "news"
+}
 
 # # Tarik data dari database, simpan dalam bentuk python object
 # test_data = FetchDbToJson(db_config) 
@@ -345,3 +345,21 @@ with open('sameExample2.json', 'r') as f:
 #         return response.json
     
 # print(test_top_keywords_endpoint(test_data))
+
+# ==============================================================================
+# add entry to database
+
+def add_entry_to_db(data, db_config):
+    mydb = mysql.connector.connect(**db_config)
+    mycursor = mydb.cursor()
+
+    sql = """
+    INSERT INTO articles (title, source, url, image, content)
+    VALUES (%s, %s, %s, %s, %s)
+    """
+    val = (data['title'], data['source'], data['url'], data['image'], data['content'])
+    mycursor.execute(sql, val)
+    mydb.commit()
+
+    mycursor.close()
+    mydb.close()
