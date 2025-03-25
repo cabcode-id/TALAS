@@ -3,3 +3,4 @@ __pycache__/
 *.env
 *.safetensors
 **/serviceAccountKey.json
+Development/userlogin/node_modules
