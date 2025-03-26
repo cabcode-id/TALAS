@@ -3,14 +3,16 @@ from simpletransformers.ner import NERModel, NERArgs
 
 def setup_environment():
     os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(script_dir)
 
 def get_model(labels):
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the current script's directory
+    model_path = os.path.join(script_dir, "..", "model", "ner")  # Construct absolute model path
+
     model_args = NERArgs()
     model_args.labels_list = labels
     model_args.do_lower_case = True
-    return NERModel(model_type='distilbert', model_name='model/ner', labels=labels, args=model_args, use_cuda=False)
+
+    return NERModel(model_type='distilbert', model_name=model_path, labels=labels, args=model_args, use_cuda=False)
 
 def predict_text(model, text):
     if not isinstance(text, list):
