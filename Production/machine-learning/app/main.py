@@ -228,12 +228,12 @@ def analyze():
             return jsonify({"error": "Input must be a list of news articles"}), 400
         
         df = pd.DataFrame(data)
-
         for col in ['title', 'content', 'embedding']:
             if col not in df.columns:
                 return jsonify({"error": f"Input must contain {col} field"}), 400
 
         df = completeDf(df)
+        
         documents = create_documents(df)
         analysis = analyze_article(documents)
         response = {

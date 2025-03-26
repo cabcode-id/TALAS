@@ -2,20 +2,64 @@ import json
 import mysql.connector
 import sys
 import os
-
+import re
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 # Get the parent directory of the current script
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.main import app
 
+stopword_factory = StopWordRemoverFactory()
+stopword = stopword_factory.create_stop_word_remover()
+stemmer_factory = StemmerFactory()
+stemmer = stemmer_factory.create_stemmer()
+
+def sanitize(text):
+    text = str(text)
+
+    # change text to lowercase
+    text = text.lower()
+
+    # remove hyperlinks
+    text =re.sub(r'https?:\/\/.*[\r\n]*', '', text)
+
+    # remove hashtag and username
+    text = re.sub(r'(@\w+|#\w+)', '', text)
+
+    # remove character other than a-z A-Z and 0-9
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)
+
+    # replace new line '\n' with space
+    text = re.sub(r'\n', ' ', text)
+    text = re.sub(r'\t', ' ', text)
+
+    # removing more than one space
+    text = re.sub(r'\s{2,}', ' ', text)
+
+    # remove stopword with sastrawi library
+    text = stopword.remove(text)
+
+    # do stemming with sastrawi library
+    text = stemmer.stem(text)
+
+    return text
+
 # Endpoints: cluster, bias, hoax, ideology, title, modeCluster, analyze
 # For cluster, bias, hoax, ideology, 'article' variable must only have 1 article, with 'content'.
 # For title, modeCluster, analyze, separate, embedding, cleaned, 'article' variable should have multiple articles with 'content', preferably with 'embedding'
 def test_endpoint(endpoint, article):
+    if isinstance(article, list):
+        sanitized_data = [
+            {**item, "content": sanitize(item["content"])} for item in article
+        ]
+    else:
+        sanitized_data = {**article, "content": sanitize(article["content"])}
+
     with app.test_client() as client:
         response = client.post(
             f'/{endpoint}',
-            data=json.dumps(article), 
+            data=json.dumps(sanitized_data), 
             content_type='application/json'
         )
         return response.json
@@ -251,25 +295,25 @@ db_config = {
 # =============================================================================================
 # TEST CODE
 # =============================================================================================
-
+    
 # Contoh endpoint untuk 1 artikel aja
-# test_data = {
-#     'content': "Menteri Koordinator Bidang Kemaritiman dan Investasi (Menko Marves) Luhut Binsar Panjaitan menargetkan Indonesia mampu memproduksi sendiri baterai lithium  untuk menunjang  kendaraan listrik di dalam negeri. Bahan baku baterai lithium itu nantinyaberasal dari Indonesia yakni nikel. Target itu juga telah disampaikan di depan para pimpinan pebisnis di Indonesia dan Asia yang hadir dalam acara DBS Asian Insights Forum 2023, Rabu (15\/3) lalu. Saya sampaikan bahwa pada tahun 2025, kami akan mampu memproduksi baterai lithium sendiri. Sehingga kita akan menjadi produsen baterai lithium terbesar ketiga di dunia pada tahun 2027 atau 2028 nanti. ' So, don't look down on Indonesia ' kata Luhut dalam unggahan di Instagram @ luhut.pandjaitan , Sabtu (18\/3). Luhut mengatakan target tersebut bukan sekedar angan-angan belaka, melainkan data menunjukkan bahwa ada investasi senilai US$31,9 miliar atau setara Rp490,4 triliun (asumsi kurs Rp15.375 per dolar AS) untuk pengembangan supply chain industri baterai di Indonesia hingga tahun 2026. [Gambas:Instagram] Indonesia, lanjut Luhut, juga telah menarik investasi asing langsung sebesar US$45,6 miliar atau setara Rp701,1 triliun tahun lalu, yang kemudian menurutnya merupakan rekor tertinggi baru sejak tahun 2000. Belum lagi nilai ekspor industri nikel kami mencapai US$33,8miliar pada tahun 2022, di mana US$ 14,3 miliar dihasilkan dari ekspor besi dan baja,\" kata dia. Luhut menilai 'keberhasilan' itu terwujud lantaran keteguhan Presiden Joko Widodo untuk tetap melanjutkan kebijakan hilirisasi industri dalam mengolah bahan baku di dalam negeri untuk nilai tambah yang lebih tinggi. Lebih lanjut, Luhut mengaku data-data tersebut sudah ia sampaikan juga kepada IMF yang bertandang ke kantornya beberapa waktu lalu. Luhut pun mengatakan kepada mereka, untuk saat ini, Indonesia sudah bisa mengekspor besi dan baja, bukan bijih nikel lagi. Luhut juga menargetkan Indonesia akan melakukan ekspor timah, bauksit, tembaga, dan bahan baku lainnya. Ia menginginkan agar perubahan besar ini harus dilihat oleh negara-negara maju. \" This is their problem . Selalu melihat negara berkembang seperti Indonesia adalah negara yang mereka tahu dua puluh atau lima belas tahun yang lalu. Dengan memberlakukan larangan ekspor nikel, kita mempunyai kekuatan untuk menghasilkan energi hijau yang sudah kita cita-citakan sejak lama, jelasnya. Luhut pun meminta agar seluruh masyarakat Indonesia berbangga hati. Kendati demikian, ia juga mewanti-wanti bahwa Indonesia tidak melawan negara manapun, melainkan justru bersahabat dengan siapa saja. Indonesia menurutnya terbuka dan mempersilakan negara-negara lain untuk berinvestasi serta membangun industri pengolahan pertambangan di dalam negeri. \"Dengan catatan bahwa kami juga punya aturan main atau regulasi yang harus mereka penuhi. Menjadi negara maju adalah hak setiap negara, kewajiban kita adalah memperjuangkannya, ujar Luhut. [Gambas:Video CNN]"
-# }
+test_data = {
+    'content': "Menteri Koordinator Bidang Kemaritiman dan Investasi (Menko Marves) Luhut Binsar Panjaitan menargetkan Indonesia mampu memproduksi sendiri baterai lithium  untuk menunjang  kendaraan listrik di dalam negeri. Bahan baku baterai lithium itu nantinyaberasal dari Indonesia yakni nikel. Target itu juga telah disampaikan di depan para pimpinan pebisnis di Indonesia dan Asia yang hadir dalam acara DBS Asian Insights Forum 2023, Rabu (15\/3) lalu. Saya sampaikan bahwa pada tahun 2025, kami akan mampu memproduksi baterai lithium sendiri. Sehingga kita akan menjadi produsen baterai lithium terbesar ketiga di dunia pada tahun 2027 atau 2028 nanti. ' So, don't look down on Indonesia ' kata Luhut dalam unggahan di Instagram @ luhut.pandjaitan , Sabtu (18\/3). Luhut mengatakan target tersebut bukan sekedar angan-angan belaka, melainkan data menunjukkan bahwa ada investasi senilai US$31,9 miliar atau setara Rp490,4 triliun (asumsi kurs Rp15.375 per dolar AS) untuk pengembangan supply chain industri baterai di Indonesia hingga tahun 2026. [Gambas:Instagram] Indonesia, lanjut Luhut, juga telah menarik investasi asing langsung sebesar US$45,6 miliar atau setara Rp701,1 triliun tahun lalu, yang kemudian menurutnya merupakan rekor tertinggi baru sejak tahun 2000. Belum lagi nilai ekspor industri nikel kami mencapai US$33,8miliar pada tahun 2022, di mana US$ 14,3 miliar dihasilkan dari ekspor besi dan baja,\" kata dia. Luhut menilai 'keberhasilan' itu terwujud lantaran keteguhan Presiden Joko Widodo untuk tetap melanjutkan kebijakan hilirisasi industri dalam mengolah bahan baku di dalam negeri untuk nilai tambah yang lebih tinggi. Lebih lanjut, Luhut mengaku data-data tersebut sudah ia sampaikan juga kepada IMF yang bertandang ke kantornya beberapa waktu lalu. Luhut pun mengatakan kepada mereka, untuk saat ini, Indonesia sudah bisa mengekspor besi dan baja, bukan bijih nikel lagi. Luhut juga menargetkan Indonesia akan melakukan ekspor timah, bauksit, tembaga, dan bahan baku lainnya. Ia menginginkan agar perubahan besar ini harus dilihat oleh negara-negara maju. \" This is their problem . Selalu melihat negara berkembang seperti Indonesia adalah negara yang mereka tahu dua puluh atau lima belas tahun yang lalu. Dengan memberlakukan larangan ekspor nikel, kita mempunyai kekuatan untuk menghasilkan energi hijau yang sudah kita cita-citakan sejak lama, jelasnya. Luhut pun meminta agar seluruh masyarakat Indonesia berbangga hati. Kendati demikian, ia juga mewanti-wanti bahwa Indonesia tidak melawan negara manapun, melainkan justru bersahabat dengan siapa saja. Indonesia menurutnya terbuka dan mempersilakan negara-negara lain untuk berinvestasi serta membangun industri pengolahan pertambangan di dalam negeri. \"Dengan catatan bahwa kami juga punya aturan main atau regulasi yang harus mereka penuhi. Menjadi negara maju adalah hak setiap negara, kewajiban kita adalah memperjuangkannya, ujar Luhut. [Gambas:Video CNN]"
+}
 
 # print(test_endpoint('cluster', test_data))
 # print(test_endpoint('bias', test_data))
 # print(test_endpoint('hoax', test_data))
 # print(test_endpoint('ideology', test_data))
-
+# print(test_endpoint('cleaned', test_data))
 # Contoh endpoint untuk banyak artikel
-import os 
+# import os 
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
+# script_dir = os.path.dirname(os.path.abspath(__file__))
+# os.chdir(script_dir)
 
-with open('sameExample2.json', 'r') as f:
-    test_data = json.load(f)
+# with open('financeExample.json', 'r') as f:
+#     test_data = json.load(f)
 
 # print(test_endpoint('title', test_data)) 
 # print(test_endpoint('modeCluster', test_data))
@@ -299,28 +343,28 @@ with open('sameExample2.json', 'r') as f:
 # print(test_endpoint('antipode', antipode_data))
 
 # if __name__ == '__main__':
-#     test_data = [
-#         {
-#             "content": "Menteri Koordinator Bidang Kemaritiman dan Investasi (Menko Marves) Luhut Binsar Pandjaitan menghadiri forum investasi di Jakarta."
-#         },
-#         {
-#             "content": "Presiden Joko Widodo meresmikan proyek infrastruktur baru di ibu kota negara."
-#         },
-#         {
-#             "content": "Pemerintah mengumumkan kebijakan baru terkait subsidi energi untuk masyarakat."
-#         }
-#     ]
+# test_data = [
+#     {
+#         "content": "Menteri Koordinator Bidang Kemaritiman dan Investasi (Menko Marves) Luhut Binsar Pandjaitan menghadiri forum investasi di Jakarta."
+#     },
+#     {
+#         "content": "Presiden Joko Widodo meresmikan proyek infrastruktur baru di ibu kota negara."
+#     },
+#     {
+#         "content": "Pemerintah mengumumkan kebijakan baru terkait subsidi energi untuk masyarakat."
+#     }
+# ]
 
-#     def test_ner_endpoint(test_data):
-#         with app.test_client() as client:
-#             response = client.post(
-#                 '/ner',
-#                 data=json.dumps(test_data), 
-#                 content_type='application/json'
-#             )
-#             return response.json
+# def test_ner_endpoint(test_data):
+#     with app.test_client() as client:
+#         response = client.post(
+#             '/ner',
+#             data=json.dumps(test_data), 
+#             content_type='application/json'
+#         )
+#         return response.json
 
-#     print(test_ner_endpoint(test_data))
+# print(test_ner_endpoint(test_data))
 
 
 # test_data = [
@@ -349,17 +393,17 @@ with open('sameExample2.json', 'r') as f:
 # ==============================================================================
 # add entry to database
 
-def add_entry_to_db(data, db_config):
-    mydb = mysql.connector.connect(**db_config)
-    mycursor = mydb.cursor()
+# def add_entry_to_db(data, db_config):
+#     mydb = mysql.connector.connect(**db_config)
+#     mycursor = mydb.cursor()
 
-    sql = """
-    INSERT INTO articles (title, source, url, image, content)
-    VALUES (%s, %s, %s, %s, %s)
-    """
-    val = (data['title'], data['source'], data['url'], data['image'], data['content'])
-    mycursor.execute(sql, val)
-    mydb.commit()
+#     sql = """
+#     INSERT INTO articles (title, source, url, image, content)
+#     VALUES (%s, %s, %s, %s, %s)
+#     """
+#     val = (data['title'], data['source'], data['url'], data['image'], data['content'])
+#     mycursor.execute(sql, val)
+#     mydb.commit()
 
-    mycursor.close()
-    mydb.close()
+#     mycursor.close()
+#     mydb.close()

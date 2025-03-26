@@ -26,38 +26,29 @@ Settings.embed_model = OpenAIEmbedding(model="text-embedding-ada-002")
 sys.modules['keras.src.preprocessing'] = preprocessing
 
 def loadModel(model_path, model_name):
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(script_dir)
+    script_dir = os.path.dirname(os.path.abspath(__file__))  
+    abs_model_path = os.path.join(script_dir, model_path)  
 
-    with open(f"{model_path}/{model_name}_tokenizer.pkl", 'rb') as f:
+    with open(os.path.join(abs_model_path, f"{model_name}_tokenizer.pkl"), 'rb') as f:
         tokenizer = pickle.load(f)
 
-    interpreter = tf.lite.Interpreter(model_path=f"{model_path}/{model_name}.tflite")
+    interpreter = tf.lite.Interpreter(model_path=os.path.join(abs_model_path, f"{model_name}.tflite"))
     interpreter.allocate_tensors()
     return tokenizer, interpreter
 
 def loadClusterModel():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(script_dir)
-    with open('model/cluster/kmeans_8_cluster.pkl', 'rb') as f:
+    script_dir = os.path.dirname(os.path.abspath(__file__)) 
+    cluster_model_path = os.path.join(script_dir, "..", "model", "cluster", "kmeans_8_cluster.pkl")  
+
+    with open(cluster_model_path, 'rb') as f:
         kmeans = pickle.load(f)
     return kmeans
 
-def loadModel(model_path, model_name):
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(script_dir)
-
-    with open(f"{model_path}/{model_name}_tokenizer.pkl", 'rb') as f:
-        tokenizer = pickle.load(f)
-
-    interpreter = tf.lite.Interpreter(model_path=f"{model_path}/{model_name}.tflite")
-    interpreter.allocate_tensors()
-    return tokenizer, interpreter
-
+# Load models
 kmeans = loadClusterModel()
-bias_tokenizer, bias_interpreter = loadModel('model/bias', 'bias')
-hoax_tokenizer, hoax_interpreter = loadModel('model/hoax', 'hoax')
-ideology_tokenizer, ideology_interpreter = loadModel('model/ideology', 'ideology')
+bias_tokenizer, bias_interpreter = loadModel("../model/bias", "bias")
+hoax_tokenizer, hoax_interpreter = loadModel("../model/hoax", "hoax")
+ideology_tokenizer, ideology_interpreter = loadModel("../model/ideology", "ideology")
 
 stopword_factory = StopWordRemoverFactory()
 stopword = stopword_factory.create_stop_word_remover()
@@ -153,7 +144,7 @@ def completeDf(df):
         axis=1
     )
 
-    # return df
+    return df
 
 def getClusters(df):
     X = np.array(df['embedding'].to_list(), dtype=np.float32)

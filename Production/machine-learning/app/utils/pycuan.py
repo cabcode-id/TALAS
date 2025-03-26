@@ -10,34 +10,24 @@ from tensorflow.keras.models import load_model
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 import os
-
-
-def loadnltk():
-    try:
-        # Try loading from custom path
-        nltk.data.path.append('app/model/nltk/')
-        return 
-    except LookupError:
-        # Fallback to default NLTK download location
-        nltk.data.path.append('model/nltk')
-        return 
-        
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 import yfinance as yf
 
-def load_models():
-    # Set current working directory to pycuan.py. 
+def loadnltk():
+    # Ensure NLTK loads from the correct path without modifying working directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(script_dir)
-    base_paths = ["app/model/pycuan/", "model/pycuan/"]
-    
+    nltk.data.path.append(os.path.join(script_dir, "..", "model", "nltk"))
+
+def load_models():
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get current script's directory
+    base_path = os.path.join(script_dir, "..", "model", "pycuan")  # Only look in model/pycuan/
+
     def find_file(filename):
-        for path in base_paths:
-            file_path = os.path.join(path, filename)
-            if os.path.exists(file_path):
-                return file_path
-        raise FileNotFoundError(f"{filename} not found in {base_paths}")
+        file_path = os.path.join(base_path, filename)
+        if os.path.exists(file_path):
+            return file_path
+        raise FileNotFoundError(f"{filename} not found in {base_path}")
 
     rf_classifier = joblib.load(find_file("random_forest_model.joblib"))
     tfidf_vectorizer = joblib.load(find_file("tfidf_vectorizer.joblib"))
