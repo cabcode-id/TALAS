@@ -1,0 +1,54 @@
+
+.news-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+  margin-top: 8em;
+
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px;
+  min-width: 70em;
+  /* background-color: #f9f9f9; Untuk debugging */
+  margin-left: 50em;
+  margin-top: 8em;
+}
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px;
+  /* background-color: #f4f4f4; */
+  min-width: 40em;
+  box-sizing: border-box;
+  margin-top: 10em;
+  background-color: #edededcd;
+}
+
+.detail-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--color-background-900);
+  text-align: left;
+}
+.detail-title a {
+  text-decoration: none;
+  color: var(--color-background-900);  /* Menentukan warna teks */
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Styling saat hover pada link */
+.detail-title a:hover {
+  text-decoration: underline;
+  color: var(--color-background-900);
+}

@@ -1,0 +1,77 @@
+
+  .container-finance {
+    position: relative;
+    display: grid;
+    align-content: center;   /* Rata tengah secara vertikal */
+    place-items: center;  /* Gabungan dari justify-items dan align-items */
+    align-items: stretch; 
+    grid-template-columns: 1fr 1fr;
+    gap: 5px; /* Jarak antar kolom yang lebih wajar */
+    margin: 18em; /* Rata tengah secara horizontal */
+    padding: 5px;
+    margin-top: 10em;
+    width: 100%;
+    max-width: 1200px;
+    box-sizing: border-box;
+  }
+  
+  .left-finance{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    /* background-color: #fffffff2; */
+    box-sizing: border-box;
+    /* flex: 1; Kolom kiri lebih besar */
+    min-width: 50em;
+  }
+  
+  .right-finance-2 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    /* background-color: #fffffff2; */
+    box-sizing: border-box;
+    /* flex: 1; Kolom kanan lebih kecil */
+    min-width: 50em;
+    /* margin-left: 5em; */
+    margin-top: 8.7em;
+  }
+  
+  .title-finance {
+  display: flex;               /* Menggunakan flexbox untuk teks */
+  gap: 7px;                    /* Menambahkan jarak antar elemen di dalam teks */
+  padding: 0 10px;             /* Memberi ruang pada teks agar tidak menempel tepi */
+  max-width: 100%;              /* Membatasi lebar teks */
+  max-height: 80%;             /* Membatasi tinggi teks */
+  overflow: hidden;            /* Menyembunyikan teks yang berlebih */
+  text-overflow: ellipsis;     /* Menambahkan elipsis jika teks terlalu panjang */
+  justify-content: flex-start;
+  align-items: flex-start;
+  }
+  
+  .title-finance a {
+  text-decoration: none;
+  color: var(--color-background-900);  /* Menentukan warna teks */
+  font-size: 12px;
+  font-weight: bold;
+  }
+  
+  /* Styling saat hover pada link */
+  .title-finance a:hover {
+  text-decoration: underline;
+  color: var(--color-background-900);
+  }
+
+  .left-finance .h1 {
+    font-size: 35px;
+    font-weight: bold;
+    margin-left: 8px;
+  }
+  
+  @media (max-width: 768px) {
+    .news-container {
+        grid-template-columns: 1fr; /* Kolom menjadi satu */
+    }
+  }  
