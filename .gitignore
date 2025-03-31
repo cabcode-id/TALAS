@@ -4,3 +4,4 @@ __pycache__/
 *.safetensors
 **/serviceAccountKey.json
 Development/userlogin/node_modules
+Production/node_modules

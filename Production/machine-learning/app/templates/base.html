@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>My Website</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='base.css') }}"
+    />
+  </head>
+  <body>
+    <div id="baseTitle">
+      <h1>TALAS</h1>
+    </div>
+    <main>
+      <div id="content">
+        {% block content %}{% endblock %}
+        <!-- Add this line to include child template content -->
+      </div>
+    </main>
+  </body>
+</html>
