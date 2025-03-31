@@ -1,0 +1,63 @@
+{% extends "base.html" %} 
+
+{% block content %}
+<div class="error-container">
+    <div class="error-box">
+        <h2>Error</h2>
+        <div class="error-message">
+            {% if error %}
+                {{ error }}
+            {% else %}
+                An unexpected error occurred.
+            {% endif %}
+        </div>
+        
+        <div class="error-actions">
+            <a href="{{ url_for('db_blueprint.news_page') }}" class="btn">Back to News</a>
+            <a href="/" class="btn">Home</a>
+        </div>
+    </div>
+    
+    <style>
+        .error-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .error-box {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 2rem;
+            max-width: 600px;
+            text-align: center;
+        }
+        
+        .error-message {
+            margin: 1.5rem 0;
+            font-size: 1.1rem;
+            color: #721c24;
+        }
+        
+        .error-actions {
+            margin-top: 1.5rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        
+        .btn:hover {
+            background-color: #0069d9;
+        }
+    </style>
+</div>
+{% endblock %}
