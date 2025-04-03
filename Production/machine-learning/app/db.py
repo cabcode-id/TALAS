@@ -46,47 +46,7 @@ def test_connection():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@db_blueprint.route("/insert-article", methods=["POST"])
-def insert_article():
-    try:
-        title = request.form.get('title', '')
-        source = request.form.get('source', 'PukulEnam')
-        url = request.form.get('url', '')
-        image = request.form.get('image', '')
-        date = request.form.get('date', '')
-        content = request.form.get('content', '')
 
-        if not title or not content:
-            return jsonify({"success": False, "error": "Title and content are required"}), 400
-            
-        cur = mysql.connection.cursor()
-        
-        cur.execute("SELECT MAX(id) as max_id FROM articles")
-        result = cur.fetchone()
-        next_id = 1
-        if result and result['max_id'] is not None:
-            next_id = result['max_id'] + 1
-            
-        cur.execute(
-            "INSERT INTO articles (id, title, source, url, image, date, content) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (next_id, title, source, url, image, date, content)
-        )
-        mysql.connection.commit()
-        cur.close()
-        return jsonify({
-            "success": True, 
-            "message": "Article inserted successfully",
-            "article": {
-                "id": next_id,
-                "title": title,
-                "source": source,
-                "url": url,
-                "image": image,
-                "date": date
-            }
-        })
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
 
 @db_blueprint.route("/news_page", methods=["GET"])
 def news_page():
@@ -141,3 +101,92 @@ def news_article():
 
     except Exception as e:
         return render_template("error.html", error=str(e)), 500
+
+@db_blueprint.route("/insert_news_page", methods=["GET"])
+def insert_news_page():
+    return render_template("insert_news.html")
+
+@db_blueprint.route("/insert-title", methods=["POST"])
+def insert_title():
+    try:
+        title = request.form.get('title', '')
+        cluster = request.form.get('cluster', '')
+        image = request.form.get('image', '')
+        date = request.form.get('date', '')
+        summary_liberalism = request.form.get('summary_liberalism', '')
+        summary_conservative = request.form.get('summary_conservative', '')
+        analysis = request.form.get('analysis', '')
+        
+        if not title:
+            return jsonify({"success": False, "error": "Title is required"}), 400
+            
+        cur = mysql.connection.cursor()
+        
+        # Insert record with title_index as NULL (it will be auto-generated if it's an auto-increment field)
+        cur.execute(
+            """INSERT INTO title 
+               (title, cluster, image, date, summary_liberalism, summary_conservative, analysis) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (title, cluster, image, date, summary_liberalism, summary_conservative, analysis)
+        )
+        mysql.connection.commit()
+        
+        # Get the ID of the newly inserted record
+        title_index = cur.lastrowid
+        cur.close()
+        
+        return jsonify({
+            "success": True, 
+            "message": "Article inserted successfully",
+            "title": {
+                "title": title,
+                "cluster": cluster,
+                "image": image,
+                "date": date,
+                "title_index": title_index
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/insert-article", methods=["POST"])
+def insert_article():
+    try:
+        title = request.form.get('title', '')
+        source = request.form.get('source', 'PukulEnam')
+        url = request.form.get('url', '')
+        image = request.form.get('image', '')
+        date = request.form.get('date', '')
+        content = request.form.get('content', '')
+
+        if not title or not content:
+            return jsonify({"success": False, "error": "Title and content are required"}), 400
+            
+        cur = mysql.connection.cursor()
+        
+        cur.execute("SELECT MAX(id) as max_id FROM articles")
+        result = cur.fetchone()
+        next_id = 1
+        if result and result['max_id'] is not None:
+            next_id = result['max_id'] + 1
+            
+        cur.execute(
+            "INSERT INTO articles (id, title, source, url, image, date, content) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (next_id, title, source, url, image, date, content)
+        )
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({
+            "success": True, 
+            "message": "Article inserted successfully",
+            "article": {
+                "id": next_id,
+                "title": title,
+                "source": source,
+                "url": url,
+                "image": image,
+                "date": date
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
