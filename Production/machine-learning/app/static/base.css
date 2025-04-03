@@ -34,8 +34,31 @@ body {
   box-sizing: border-box;
 }
 
+/* Navigation links styling */
+.back-button, .insert-news-button {
+  display: inline-block;
+  padding: 8px 16px;
+  margin-top: 12vh; /* Position below the fixed header */
+  margin-left: 10%;
+  background-color: orange;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.insert-news-button {
+  margin-left: 20px;
+}
+
+.back-button:hover, .insert-news-button:hover {
+  background-color: darkorange;
+}
+
 main {
-  margin-top: 10vh; /* Add top margin to account for fixed header height */
+  margin-top: 2vh; /* Reduced from 10vh since we added buttons with margin-top */
   width: 100%;
   display: flex;
   justify-content: center;

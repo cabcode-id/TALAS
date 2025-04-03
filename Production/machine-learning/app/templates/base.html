@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>My Website</title>
+    <title>TALAS</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='base.css') }}"
     />
+    {% block head %}{% endblock %}
   </head>
   <body>
     <div id="baseTitle">
       <h1>TALAS</h1>
     </div>
+    <a href="{{ url_for('db_blueprint.news_page') }}" class="back-button"
+      >News List</a
+    >
+    <a
+      href="{{ url_for('db_blueprint.insert_news_page') }}"
+      class="insert-news-button"
+      >Add New Article</a
+    >
+
     <main>
       <div id="content">
         {% block content %}{% endblock %}
