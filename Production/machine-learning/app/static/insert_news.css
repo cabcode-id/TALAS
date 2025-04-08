@@ -1,0 +1,213 @@
+:root {
+    --main-font: "Trebuchet MS", Helvetica, sans-serif;
+    --card-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    --border-radius: 10px;
+    --main-color: orange;
+    --text-color: #333;
+    --light-text: #666;
+    --border-color: #ddd;
+}
+
+body {
+    font-family: var(--main-font);
+}
+
+/* Form Container Padding */
+form {
+    padding: 0 10px;
+    max-width: 95%;
+    margin: 0 auto;
+}
+
+/* Tab Styling */
+.tab {
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background-color: #f1f1f1;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    display: flex;
+    margin-bottom: 0;
+}
+
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-family: var(--main-font);
+    font-size: 16px;
+    flex: 1;
+    color: black;
+  }
+
+.tab button:hover {
+    background-color: #ddd;
+}
+
+.tab button.active {
+    background-color: white;
+    color: var(--main-color);
+    font-weight: bold;
+    border-bottom: 3px solid var(--main-color);
+}
+
+/* Tab Content */
+.tabcontent {
+    display: none;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    background-color: white;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 30px;
+}
+
+.tabcontent.active {
+    display: block;
+}
+
+/* Form Styling */
+.form-group {
+    margin-bottom: 20px;
+    padding-right: 10px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+input[type="text"],
+input[type="url"],
+input[type="date"],
+textarea,
+select {
+    width: 98%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-family: var(--main-font);
+    font-size: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+    margin-right: 10px;
+}
+
+input[type="date"] {
+    color: var(--main-color);
+    font-weight: bold;
+}
+
+/* Make dropdown longer */
+select {
+    width: 99.5%;
+    min-height: 42px; /* Ensure consistent height */
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--main-color);
+    box-shadow: 0 0 5px rgba(255, 165, 0, 0.3);
+    outline: none;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+    width: 98%;
+}
+
+button[type="submit"] {
+    background-color: var(--main-color);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-family: var(--main-font);
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    display: block;
+    margin: 20px auto 10px;
+}
+
+button[type="submit"]:hover {
+    background-color: #ff8c00;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Response Section */
+#response {
+    margin-top: 30px;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    background-color: #f9f9f9;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+}
+
+#response h3 {
+    margin-top: 0;
+    color: var(--text-color);
+}
+
+#responseJson {
+    background-color: #f1f1f1;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    overflow-x: auto;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .tab button {
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    h2 {
+        font-size: 20px;
+    }
+    
+    .form-group {
+        padding-right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab button {
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+    
+    input, textarea, select, button {
+        font-size: 14px;
+    }
+    
+    h1 {
+        font-size: 22px;
+    }
+    
+    h2 {
+        font-size: 18px;
+    }
+    
+    .form-group {
+        padding-right: 5px;
+    }
+}

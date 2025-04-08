@@ -1,28 +1,30 @@
-from flask import Flask, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from flask_mysqldb import MySQL
-import MySQLdb.cursors
-from flask_cors import CORS  # Import Flask-CORS
+import re 
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+db_blueprint = Blueprint('db_blueprint', __name__)
 
-app.config["MYSQL_HOST"] = "localhost"  # Add host configuration, default is localhost
-app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = ""
-app.config["MYSQL_DB"] = "news2"
-app.config["MYSQL_PORT"] = 3306  # Default MySQL port
-app.config["MYSQL_CURSORCLASS"] = "DictCursor"
+mysql = None
 
-mysql = MySQL(app)
+def init_mysql(app):
+    global mysql
+    app.config["MYSQL_HOST"] = "localhost"  
+    app.config["MYSQL_USER"] = "root"
+    app.config["MYSQL_PASSWORD"] = ""
+    app.config["MYSQL_DB"] = "news"
+    app.config["MYSQL_PORT"] = 3306 
+    app.config["MYSQL_CURSORCLASS"] = "DictCursor"
 
-@app.route("/")
+    mysql = MySQL(app)
+
+@db_blueprint.route("/users")
 def users():
     cur = mysql.connection.cursor()
     cur.execute("""SELECT user, host FROM mysql.user""")
     rv = cur.fetchall()
-    return str(rv)
+    return jsonify(rv)
 
-@app.route("/news")
+@db_blueprint.route("/news")
 def get_news():
     try:
         cur = mysql.connection.cursor()
@@ -33,7 +35,7 @@ def get_news():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route("/test-connection")
+@db_blueprint.route("/test-connection")
 def test_connection():
     try:
         cur = mysql.connection.cursor()
@@ -44,18 +46,119 @@ def test_connection():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route("/insert-article", methods=["GET", "POST"])
+
+
+@db_blueprint.route("/news_page", methods=["GET"])
+def news_page():
+    try:
+        start_date = request.args.get('start_date') 
+        end_date = request.args.get('end_date')
+
+        cur = mysql.connection.cursor()
+        
+        if start_date and end_date:
+            cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s", 
+                      (start_date, end_date))
+        else:
+            cur.execute("SELECT title, image, date, title_index, cluster FROM title")
+            
+        news_items = cur.fetchall()
+        cur.close()
+        return render_template("news.html", news_items=news_items, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        return render_template("error.html", error=str(e)), 500
+
+def parse_analysis(text):
+    text = text.replace("Liberal:", "Dari sisi liberal:")
+    text = text.replace("Conservative:", "Dari sisi konservatif:")
+    return text
+
+@db_blueprint.route("/news_article", methods=["GET"])
+def news_article():
+    try:
+        title_index = request.args.get('title_index')
+        
+        if not title_index:
+            return render_template("error.html", error="No article ID provided"), 400
+            
+        cur = mysql.connection.cursor()
+
+        cur.execute("SELECT * FROM title WHERE title_index = %s", (title_index,)) 
+        news = cur.fetchone()
+        
+        if not news:
+            cur.close()
+            return render_template("error.html", error="Article not found"), 404
+        if "analysis" in news and news["analysis"]:
+            news["parsed_analysis"] = parse_analysis(news["analysis"])
+        else:
+            news["parsed_analysis"] = news["analysis"] if "analysis" in news else ""
+        cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
+        articles = cur.fetchall()
+        cur.close()
+
+        return render_template("news_article.html", news=news, articles=articles)
+
+    except Exception as e:
+        return render_template("error.html", error=str(e)), 500
+
+@db_blueprint.route("/insert_news_page", methods=["GET"])
+def insert_news_page():
+    return render_template("insert_news.html")
+
+@db_blueprint.route("/insert-title", methods=["POST"])
+def insert_title():
+    try:
+        title = request.form.get('title', '')
+        cluster = request.form.get('cluster', '')
+        image = request.form.get('image', '')
+        date = request.form.get('date', '')
+        summary_liberalism = request.form.get('summary_liberalism', '')
+        summary_conservative = request.form.get('summary_conservative', '')
+        analysis = request.form.get('analysis', '')
+        
+        if not title:
+            return jsonify({"success": False, "error": "Title is required"}), 400
+            
+        cur = mysql.connection.cursor()
+        
+        # Insert record with title_index as NULL (it will be auto-generated if it's an auto-increment field)
+        cur.execute(
+            """INSERT INTO title 
+               (title, cluster, image, date, summary_liberalism, summary_conservative, analysis) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            (title, cluster, image, date, summary_liberalism, summary_conservative, analysis)
+        )
+        mysql.connection.commit()
+        
+        # Get the ID of the newly inserted record
+        title_index = cur.lastrowid
+        cur.close()
+        
+        return jsonify({
+            "success": True, 
+            "message": "Article inserted successfully",
+            "title": {
+                "title": title,
+                "cluster": cluster,
+                "image": image,
+                "date": date,
+                "title_index": title_index
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/insert-article", methods=["POST"])
 def insert_article():
     try:
-        title = request.args.get('title') or request.form.get('title', '')
-        source = request.args.get('source') or request.form.get('source')
-        if not source:
-            source = 'PukulEnam'
-        url = request.args.get('url') or request.form.get('url', '')
-        image = request.args.get('image') or request.form.get('image', '')
-        date = request.args.get('date') or request.form.get('date', '')
-        content = request.args.get('content') or request.form.get('content', '')
-        
+        title = request.form.get('title', '')
+        source = request.form.get('source', 'PukulEnam')
+        url = request.form.get('url', '')
+        image = request.form.get('image', '')
+        date = request.form.get('date', '')
+        content = request.form.get('content', '')
+
         if not title or not content:
             return jsonify({"success": False, "error": "Title and content are required"}), 400
             
@@ -87,6 +190,3 @@ def insert_article():
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-    
-if __name__ == "__main__":
-    app.run(debug=True)
