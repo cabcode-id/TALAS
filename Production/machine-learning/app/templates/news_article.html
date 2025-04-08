@@ -1,0 +1,52 @@
+{% extends "base.html" %} {% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='news_article.css') }}"
+/>
+
+<div id="news-container">
+  {% if news %}
+  <h1>{{ news.title }}</h1>
+  {% if news.image %}
+  <img src="{{ news.image }}" alt="News Image" style="max-width: 100%" />
+  {% endif %}
+  <p><b>Date: {{ news.date }}</b></p>
+  {% set categories = {0: "Korupsi", 1: "Pemerintahan", 2: "Kejahatan", 3:
+  "Transportasi", 4: "Bisnis", 5: "Agama", 6: "Finance", 7: "Politik"} %}
+
+  <p><b>Category: {{ categories.get(news.cluster, "Unknown") }} </b></p>
+  <p class="liberal"><b><u>Rangkuman Liberal</u></b> 
+    {{news.summary_liberalism}}
+  </p>
+  <p class="conservative"><b><u>Rangkuman Konservatif</u></b> 
+    {{news.summary_conservative}}
+  </p>
+  <p class="analysis"><b><u>Analisis</u></b> 
+    {{news.parsed_analysis}}
+  </p>
+  <div class="articles-section">
+    <h2>Related Articles</h2>
+    {% if articles %} {% for article in articles %}
+    <div class="article">
+      <h3>{{ article.title }}</h3>
+      <p>Source: {{ article.source }}</p>
+      <p>Date: {{ article.date }}</p>
+      {% if article.url %}
+      <p class="article-link"><a href="{{ article.url }}" target="_blank"><u>Article Link</u></a></p>
+      {% endif %} {% set bias = {0: "Not Biased", 1: "Biased"} %}
+      <p class="bias"> Bias Classification: {{bias.get(article.bias, "Unknown")}} </p>
+      <p class="hoax">Hoax Rate: {{article.hoax}}</p>
+      {% set ideology = {0: "Liberal", 1: "Conservative"} %}
+      <p class="ideology">Ideology: {{ideology.get(article.ideology)}}</p>
+    </div>
+    {% endfor %} {% else %}
+    <p>No related articles found.</p>
+    {% endif %}
+  </div>
+  {% else %}
+  <p>News article not found.</p>
+  {% endif %}
+
+  <a href="{{ url_for('db_blueprint.news_page') }}">Back to News List</a>
+</div>
+{% endblock %}

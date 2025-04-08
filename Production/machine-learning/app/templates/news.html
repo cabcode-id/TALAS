@@ -1,0 +1,47 @@
+{% extends "base.html" %} {% block content %}
+<script src="{{ url_for('static', filename='news.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='news.css') }}" />
+
+<div class="date-container">
+  <label for="date-range" id="date-label">Choose Date</label>
+  <div class="date-range">
+    <input type="date" id="start" value="{{start_date}}" />
+    <span id="date-separator">-</span>
+    <input type="date" id="end" value="{{end_date}}" />
+  </div>
+</div>
+
+<h1 id="news-articles"><u>News Articles</u></h1>
+
+<div class="news-grid">
+  {% set categories = {0: "Korupsi", 1: "Pemerintahan", 2: "Kejahatan", 3:
+  "Transportasi", 4: "Bisnis", 5: "Agama", 6: "Finance", 7: "Politik"} %} {% for
+  news in news_items %}
+  <div class="news-card">
+    <div class="news-image">
+      {% if news.image %}
+      <img src="{{ news.image }}" alt="Image Unavailable" />
+      {% else %}
+      <div class="no-image">No Image Available</div>
+      {% endif %}
+    </div>
+    <div class="news-title">
+      <a
+        href="{{ url_for('db_blueprint.news_article', title_index=news.title_index) }}"
+      >
+        {{ news.title }}
+      </a>
+    </div>
+    <div class="news-category">
+      <p>
+        Category: {% if news.cluster is defined %} {{
+        categories.get(news.cluster|int, "Unknown") }} {% else %} Undefined {%
+        endif %}
+      </p>
+    </div>
+    <div class="news-date">{{ news.date }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

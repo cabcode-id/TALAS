@@ -16,17 +16,17 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 1. **Bias Detection Endpoint**
 - **URL**: `/bias`
 - **Method**: POST
-- **Description**: Memproses teks untuk menentukan bias artikel berita.
+- **Description**: Processes text to determine the bias of a news article.
 - **Request**:
   ```json
   {
-      "content": "string" // Isi artikel berita
+      "content": "string" // Content of the news article
   }
   ```
 - **Response**:
   ```json
   {
-      "bias": 0 // Kategori bias (0 atau 1)
+      "bias": 0 // Not bias or Bias (0 or 1)
   }
   ```
 
@@ -35,17 +35,17 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 2. **Hoax Detection Endpoint**
 - **URL**: `/hoax`
 - **Method**: POST
-- **Description**: Memproses teks untuk menentukan apakah artikel tersebut mengandung hoaks.
+- **Description**: Processes text to determine if the article contains hoaxes.
 - **Request**:
   ```json
   {
-      "content": "string" // Isi artikel berita
+      "content": "string" // Content of the news article
   }
   ```
 - **Response**:
   ```json
   {
-      "hoax": 0.85 // Tingkat hoaks (0 hingga 1)
+      "hoax": "float" // Hoax probability (0 to 1)
   }
   ```
 
@@ -54,17 +54,17 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 3. **Ideology Detection Endpoint**
 - **URL**: `/ideology`
 - **Method**: POST
-- **Description**: Memproses teks untuk menentukan ideologi artikel berita.
+- **Description**: Processes text to determine the ideology of a news article.
 - **Request**:
   ```json
   {
-      "content": "string" // Isi artikel berita
+      "content": "string" // Content of the news article
   }
   ```
 - **Response**:
   ```json
   {
-      "ideology": 1 // Ideologi artikel (0 = konservatif, 1 = liberal)
+      "ideology": 0 // 0 or 1, "liberal" or "conservative"
   }
   ```
 
@@ -93,15 +93,18 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 2. **Generate Mode Cluster**
 - **URL**: `/modeCluster`
 - **Method**: POST
-- **Description**: Mencari cluster yang paling umum dari kumpulan artikel berita.
+- **Description**: Mencari cluster mayoritas dari kumpulan artikel berita.
 - **Request**:
   ```json
   [
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
-          "embedding": [0.1, 0.2] // Representasi embedding
-      }
+      },
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
+      },
   ]
   ```
 - **Response**:
@@ -146,7 +149,10 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
-          "embedding": [0.1, 0.2] // Representasi embedding
+      },
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
       }
   ]
   ```
@@ -160,7 +166,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ---
 
 ### 3. **Generate Summary Endpoint**
-- **URL**: `/summarize`
+- **URL**: `/summary`
 - **Method**: POST
 - **Description**: Membuat dua ringkasan (liberal dan konservatif) dari kumpulan artikel berita.
 - **Request**:
@@ -169,7 +175,10 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
-          "embedding": [0.1, 0.2] // Representasi embedding
+      },
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
       }
   ]
   ```
@@ -181,6 +190,86 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
   }
   ```
 
+---
+
+### 4. **Generate Analysis Endpoint**
+- **URL**: `/analyze`
+- **Method**: POST
+- **Description**: Menghasilkan analisis perbandingan perspektif liberal dan konservatif.
+- **Request**:
+  ```json
+  [
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
+      },
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
+      }
+  ]
+  ```
+- **Response**:
+  ```json
+  {
+      "analyze": "string" // Analisis dari dua perspektif berbeda
+  }
+  ```
+
+---
+
+### 5. **Clean Text Endpoint**
+- **URL**: `/cleaned`
+- **Method**: POST
+- **Description**: Membersihkan teks berita dengan menghapus stopwords dan melakukan stemming.
+- **Request**:
+  ```json
+  {
+      "content": "string" // atau ["string", "string"] untuk multiple teks
+  }
+  ```
+- **Response**:
+  ```json
+  {
+      "cleaned": "string" // atau ["string", "string"] jika input adalah array
+  }
+  ```
+
+---
+
+### 6. **Separate Articles Endpoint**
+- **URL**: `/separate`
+- **Method**: POST
+- **Description**: Memisahkan artikel berdasarkan kesamaan konten menggunakan similaritas embedding.
+- **Request**:
+  ```json
+  [
+      {
+          "title": "string",
+          "content": "string",
+      },
+      {
+          "title": "string",
+          "content": "string",
+      },
+      {
+          "title": "string",
+          "content": "string",
+      },
+      {
+          "title": "string",
+          "content": "string",
+      }
+  ]
+  ```
+- **Response**:
+  ```json
+  {
+      "separate": [0, 1, 0, 1] // Berita pada indeks 0 dan 2 mirip, dan diberi kode kelompok "0"
+  }
+  ```
+
+---
 
 ### Process All Articles
 - **URL**: `/process-all`
@@ -193,7 +282,10 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
   {
     "title": "string",
     "content": "string",
-    "embedding": [0.0, 0.1, 0.2]
+  },
+  {
+    "title": "string",
+    "content": "string",
   }
 ]
 ```
@@ -206,17 +298,38 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
     "modeCluster": "Cluster/Category Name",
     "summary_liberalism": "Liberal perspective summary",
     "summary_conservative": "Conservative perspective summary",
-    "analysis": "Bias and content analysis details"
+    "analyze": "Bias and content analysis details"
   }
 ]
 ```
 
-#### Possible Responses
-- **200 OK**: Successfully processed and grouped articles
-- **400 Bad Request**: Invalid input data
-- **500 Internal Server Error**: Processing error
+---
 
+### 7. **Antipode Articles Endpoint**
+- **URL**: `/antipode`
+- **Method**: POST
+- **Description**: Menemukan artikel dengan sudut pandang yang berlawanan dari artikel yang diberikan.
+- **Request**:
+  ```json
+  {
+      "article": {
+          "title": "string",
+          "content": "string",
+      },
+      "df": [
+          {
+              "title": "string",
+              "content": "string"
+          }
+      ]
+  }
+  ```
+- **Response**:
+  ```json
+  ["Judul Artikel 1", "Judul Artikel 2"] // Judul artikel dengan sudut pandang berlawanan
+  ```
 
+---
 
 ## Named Entity Recognition (NER)
 ### 1. **Main NER Page**
@@ -231,7 +344,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 2. **Text Processing**
 - **URL**: `/process`
 - **Method**: POST
-- **Description**: Memproses teks menggunakan model spaCy untuk mendeteksi entitas.
+- **Description**: Memproses teks menggunakan model BERT untuk mendeteksi entitas.
 - **Request**:
   - Form Data:
     ```
@@ -239,6 +352,51 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
     ```
 - **Response**:
   - 200 OK: Mengembalikan hasil analisis entitas dalam format HTML.
+
+---
+
+### 3. **NER API Endpoint**
+- **URL**: `/ner`
+- **Method**: POST
+- **Description**: Mendeteksi entitas bernama dalam teks menggunakan model NER.
+- **Request**:
+  ```json
+  [
+      {
+          "content": "string" // Teks yang akan dianalisis
+      }
+  ]
+  ```
+- **Response**:
+  ```json
+  [
+      [
+          {"word": "entity", "tag": "B-PER"}
+      ]
+  ] // Daftar entitas yang terdeteksi untuk setiap teks
+  ```
+
+---
+
+### 4. **Top Keywords Endpoint**
+- **URL**: `/top_keywords`
+- **Method**: POST
+- **Description**: Menemukan kata kunci yang paling sering muncul dari beberapa artikel (kata kunci dideteksi dari NER)
+- **Request**:
+  ```json
+  [
+      {
+          "keyword": ["string", "string"]
+      }
+  ]
+  ```
+- **Response**:
+  ```json
+  [
+      ["keyword1", 10],
+      ["keyword2", 7]
+  ] // Pasangan kata kunci dan jumlah kemunculan
+  ```
 
 ---
 
@@ -342,3 +500,161 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 {
   "message": "News updated successfully from general crawler"
 }
+```
+
+## Database Endpoints
+
+### 1. **Fetch Users**
+- **URL**: `/users`
+- **Method**: GET
+- **Description**: Fetches a list of MySQL users.
+- **Response**:
+  ```json
+  [
+      {
+          "user": "string",
+          "host": "string"
+      }
+  ]
+  ```
+
+---
+
+### 2. **Fetch News**
+- **URL**: `/news`
+- **Method**: GET
+- **Description**: Fetches a list of news articles from the database.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "id": "integer",
+              "title": "string",
+              "source": "string",
+              "url": "string",
+              "image": "string",
+              "content": "string",
+              "embedding": "string",
+              "cleaned": "string",
+              "title_index": "integer",
+              "cluster": "integer",
+              "bias": "integer",
+              "hoax": "float",
+              "ideology": "integer"
+          }
+      ]
+  }
+  ```
+
+---
+
+### 3. **Test Database Connection**
+- **URL**: `/test-connection`
+- **Method**: GET
+- **Description**: Tests the connection to the database and retrieves the list of tables.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "tables": [
+          {"Tables_in_news": "string"}
+      ]
+  }
+  ```
+
+---
+
+### 4. **News Page**
+- **URL**: `/news_page`
+- **Method**: GET
+- **Description**: Fetches news articles with optional date filtering and renders them in an HTML page.
+- **Query Parameters**:
+  - `start_date`: Start date for filtering (optional).
+  - `end_date`: End date for filtering (optional).
+- **Response**: Renders an HTML page with news articles.
+
+---
+
+### 5. **News Article**
+- **URL**: `/news_article`
+- **Method**: GET
+- **Description**: Fetches details of a specific news article and renders it in an HTML page.
+- **Query Parameters**:
+  - `title_index`: The index of the article to fetch.
+- **Response**: Renders an HTML page with the article details.
+
+---
+
+### 6. **Insert News Page**
+- **URL**: `/insert_news_page`
+- **Method**: GET
+- **Description**: Renders a page for inserting news articles.
+- **Response**: Renders an HTML page for inserting news.
+
+---
+
+### 7. **Insert Title**
+- **URL**: `/insert-title`
+- **Method**: POST
+- **Description**: Inserts a new title into the database.
+- **Request**:
+  ```json
+  {
+      "title": "string",
+      "cluster": "string",
+      "image": "string",
+      "date": "string",
+      "summary_liberalism": "string",
+      "summary_conservative": "string",
+      "analysis": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "message": "Article inserted successfully",
+      "title": {
+          "title": "string",
+          "cluster": "string",
+          "image": "string",
+          "date": "string",
+          "title_index": "integer"
+      }
+  }
+  ```
+
+---
+
+### 8. **Insert Article**
+- **URL**: `/insert-article`
+- **Method**: POST
+- **Description**: Inserts a new article into the database.
+- **Request**:
+  ```json
+  {
+      "title": "string",
+      "source": "string",
+      "url": "string",
+      "image": "string",
+      "date": "string",
+      "content": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "message": "Article inserted successfully",
+      "article": {
+          "id": "integer",
+          "title": "string",
+          "source": "string",
+          "url": "string",
+          "image": "string",
+          "date": "string"
+      }
+  }
+  ```

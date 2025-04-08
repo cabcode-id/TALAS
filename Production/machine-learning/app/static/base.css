@@ -1,0 +1,76 @@
+#baseTitle {
+  position: fixed; /* Fix the header at the top */
+  top: 0; /* Position at the top of the viewport */
+  left: 0; /* Ensure it starts from the left edge */
+  z-index: 1000; /* Keep it above other content */
+  display: flex; /* Enable flexbox layout */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  width: 100vw;
+  height: 10vh;
+  background-color: rgb(255, 255, 255);
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  font-size: 36px;
+  letter-spacing: 0px;
+  word-spacing: 2px;
+  color: orange;
+  font-weight: 700;
+  text-decoration: none solid rgb(68, 68, 68);
+  font-style: normal;
+  font-variant: small-caps;
+  text-transform: none;
+  -webkit-box-shadow: 0px 7px 13px 0px rgba(0, 0, 0, 0.47);
+  box-shadow: 0px 7px 13px 0px rgba(0, 0, 0, 0.47);
+}
+
+#baseTitle h1 {
+  margin: 0; /* Remove default margin */
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Navigation links styling */
+.back-button, .insert-news-button {
+  display: inline-block;
+  padding: 8px 16px;
+  margin-top: 12vh; /* Position below the fixed header */
+  margin-left: 10%;
+  background-color: orange;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.insert-news-button {
+  margin-left: 20px;
+}
+
+.back-button:hover, .insert-news-button:hover {
+  background-color: darkorange;
+}
+
+main {
+  margin-top: 2vh; /* Reduced from 10vh since we added buttons with margin-top */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: center;
+  width: 80%;
+  padding: 20px;
+  background-color: #ffffff;
+  margin: 0 auto; /* Center the div horizontally */
+}
