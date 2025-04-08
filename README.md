@@ -26,7 +26,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 - **Response**:
   ```json
   {
-      "bias": "string" // Bias category (e.g., "liberal", "conservative")
+      "bias": 0 // Not bias or Bias (0 or 1)
   }
   ```
 
@@ -64,7 +64,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 - **Response**:
   ```json
   {
-      "ideology": "string" // Ideology category (e.g., "liberal", "conservative")
+      "ideology": 0 // 0 or 1, "liberal" or "conservative"
   }
   ```
 
@@ -93,15 +93,18 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 2. **Generate Mode Cluster**
 - **URL**: `/modeCluster`
 - **Method**: POST
-- **Description**: Mencari cluster yang paling umum dari kumpulan artikel berita.
+- **Description**: Mencari cluster mayoritas dari kumpulan artikel berita.
 - **Request**:
   ```json
   [
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
-          "embedding": [0.1, 0.2] // Representasi embedding
-      }
+      },
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
+      },
   ]
   ```
 - **Response**:
@@ -146,7 +149,10 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
-          "embedding": [0.1, 0.2] // Representasi embedding
+      },
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
       }
   ]
   ```
@@ -169,7 +175,10 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
-          "embedding": [0.1, 0.2] // Representasi embedding
+      },
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
       }
   ]
   ```
@@ -186,14 +195,17 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 4. **Generate Analysis Endpoint**
 - **URL**: `/analyze`
 - **Method**: POST
-- **Description**: Menghasilkan analisis berita dari perspektif liberal dan konservatif.
+- **Description**: Menghasilkan analisis perbandingan perspektif liberal dan konservatif.
 - **Request**:
   ```json
   [
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
-          "embedding": [0.1, 0.2] // Representasi embedding
+      },
+      {
+          "title": "string", // Judul artikel
+          "content": "string", // Isi artikel
       }
   ]
   ```
@@ -235,14 +247,25 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string",
           "content": "string",
-          "embedding": [0.1, 0.2]
+      },
+      {
+          "title": "string",
+          "content": "string",
+      },
+      {
+          "title": "string",
+          "content": "string",
+      },
+      {
+          "title": "string",
+          "content": "string",
       }
   ]
   ```
 - **Response**:
   ```json
   {
-      "separate": [0, 1, 0, 2] // Indeks cluster untuk setiap artikel
+      "separate": [0, 1, 0, 1] // Berita pada indeks 0 dan 2 mirip, dan diberi kode kelompok "0"
   }
   ```
 
@@ -259,7 +282,10 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
   {
     "title": "string",
     "content": "string",
-    "embedding": [0.0, 0.1, 0.2]
+  },
+  {
+    "title": "string",
+    "content": "string",
   }
 ]
 ```
@@ -277,11 +303,6 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ]
 ```
 
-#### Possible Responses
-- **200 OK**: Successfully processed and grouped articles
-- **400 Bad Request**: Invalid input data
-- **500 Internal Server Error**: Processing error
-
 ---
 
 ### 7. **Antipode Articles Endpoint**
@@ -294,7 +315,6 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       "article": {
           "title": "string",
           "content": "string",
-          "embedding": [0.1, 0.2]
       },
       "df": [
           {
@@ -324,7 +344,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 2. **Text Processing**
 - **URL**: `/process`
 - **Method**: POST
-- **Description**: Memproses teks menggunakan model spaCy untuk mendeteksi entitas.
+- **Description**: Memproses teks menggunakan model BERT untuk mendeteksi entitas.
 - **Request**:
   - Form Data:
     ```
@@ -361,7 +381,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 4. **Top Keywords Endpoint**
 - **URL**: `/top_keywords`
 - **Method**: POST
-- **Description**: Menemukan kata kunci yang paling sering muncul dari beberapa artikel.
+- **Description**: Menemukan kata kunci yang paling sering muncul dari beberapa artikel (kata kunci dideteksi dari NER)
 - **Request**:
   ```json
   [
