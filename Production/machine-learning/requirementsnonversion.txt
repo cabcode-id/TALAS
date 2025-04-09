@@ -3,7 +3,7 @@ contractions==0.1.73
 Flask
 flask_cors
 Flask_MySQLdb
-ggoogletrans_py==4.0.0
+googletrans_py==4.0.0
 joblib==1.4.2
 keras
 llama_index
