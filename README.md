@@ -271,7 +271,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### Process All Articles
+### 7. Process All Articles
 - **URL**: `/process-all`
 - **Method**: POST
 - **Description**: Process input text articles to group, generate titles, clusters/categories, summaries, and bias analysis for each group
@@ -305,7 +305,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 7. **Antipode Articles Endpoint**
+### 8. **Antipode Articles Endpoint**
 - **URL**: `/antipode`
 - **Method**: POST
 - **Description**: Menemukan artikel dengan sudut pandang yang berlawanan dari artikel yang diberikan.
