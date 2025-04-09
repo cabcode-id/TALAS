@@ -12,7 +12,7 @@ Dataset NER: https://github.com/yohanesgultom/nlp-experiments/blob/master/data/n
 ## Overview
 TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pembelajaran mesin, termasuk analisis bias, deteksi hoaks, deteksi ideologi, pengelompokan, dan entitas bernama. API ini dibangun dengan layanan Google Cloud Platform (GCP) menggunakan **App Engine** untuk komputasi, **Cloud SQL (MySQL)** untuk penyimpanan data pengguna, dan model pembelajaran mesin (supervised & unsupervised learning).
 
-## Endpoints
+## Routes.py Endpoint Production\machine-learning\app\routes.py
 ### 1. **Bias Detection Endpoint**
 - **URL**: `/bias`
 - **Method**: POST
@@ -332,30 +332,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ---
 
 ## Named Entity Recognition (NER)
-### 1. **Main NER Page**
-- **URL**: `/`
-- **Method**: GET
-- **Description**: Menampilkan halaman utama untuk input artikel dan analisis NER.
-- **Response**:
-  - 200 OK: Menampilkan halaman `ner_home.html`.
-
----
-
-### 2. **Text Processing**
-- **URL**: `/process`
-- **Method**: POST
-- **Description**: Memproses teks menggunakan model BERT untuk mendeteksi entitas.
-- **Request**:
-  - Form Data:
-    ```
-    input_data: "string" // Artikel atau teks untuk dianalisis
-    ```
-- **Response**:
-  - 200 OK: Mengembalikan hasil analisis entitas dalam format HTML.
-
----
-
-### 3. **NER API Endpoint**
+### 1. **NER API Endpoint**
 - **URL**: `/ner`
 - **Method**: POST
 - **Description**: Mendeteksi entitas bernama dalam teks menggunakan model NER.
@@ -378,7 +355,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 4. **Top Keywords Endpoint**
+### 2. **Top Keywords Endpoint**
 - **URL**: `/top_keywords`
 - **Method**: POST
 - **Description**: Menemukan kata kunci yang paling sering muncul dari beberapa artikel (kata kunci dideteksi dari NER)
@@ -502,7 +479,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 }
 ```
 
-## Database Endpoints
+## Database Endpoints Production\machine-learning\app\db.py
 
 ### 1. **Fetch Users**
 - **URL**: `/users`
