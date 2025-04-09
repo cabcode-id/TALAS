@@ -288,8 +288,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
     }
   ]
   ```
-
-#### Response Body
+- **Response**
   ```json
   [
     {
