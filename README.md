@@ -70,7 +70,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-## Unsupervised Learning Models
+### Unsupervised Learning Models
 ### 1. **Cluster Endpoint**
 - **URL**: `/cluster`
 - **Method**: POST
@@ -329,7 +329,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-## Named Entity Recognition (NER)
+### Named Entity Recognition (NER)
 ### 1. **NER API Endpoint**
 - **URL**: `/ner`
 - **Method**: POST
@@ -374,109 +374,6 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
   ```
 
 ---
-
-## Authentication
-### 1. **Login**
-- **URL**: `/process-login`
-- **Method**: POST
-- **Request Body**:
-  ```json
-  {
-      "email": "string",
-      "password": "string"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-      "auth": true,
-      "token": "string"
-  }
-  ```
-
----
-
-### 2. **Register**
-- **URL**: `/process-regist`
-- **Method**: POST
-- **Request Body**:
-  ```json
-  {
-      "username": "string",
-      "email": "string",
-      "password": "string"
-  }
-  ```
-- **Response**:
-  - 200 OK:
-    ```json
-    {
-        "message": "Data berhasil disimpan"
-    }
-    ```
-  - 500 Internal Server Error:
-    ```json
-    {
-        "message": "Terjadi kesalahan"
-    }
-    ```
-
-## News Endpoints
-
-### 1. Fetch News List
-- **URL**: `/article/news`
-- **Method**: GET
-- **Description**: Retrieve a list of news articles
-
-#### Responses
-- **200 OK**
-  ```json
-  {
-    "message": "Data fetched successfully",
-    "data": []
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Internal server error"
-  }
-  ```
-
-### 2. Get News Content
-- **URL**: `/article/:title`
-- **Method**: GET
-- **Description**: Retrieve content for a specific news article
-
-#### Responses
-- **200 OK**
-  ```json
-  {
-    "message": "Content fetched successfully",
-    "data": []
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Internal server error"
-  }
-  ```
-
-## Crawler Endpoints
-
-### 1. Run General Crawler
-- **URL**: `https://talas24.et.r.appspot.com/api/crawler/general`
-- **Method**: GET
-- **Description**: Run general crawler to update news data in the database
-
-#### Response
-```json
-{
-  "message": "News updated successfully from general crawler"
-}
-```
-
 ## Database Endpoints Production\machine-learning\app\db.py
 
 ### 1. **Fetch Users**
