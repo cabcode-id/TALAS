@@ -271,36 +271,36 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 7. Process All Articles
+### 7. **Process All Articles**
 - **URL**: `/process-all`
 - **Method**: POST
 - **Description**: Process input text articles to group, generate titles, clusters/categories, summaries, and bias analysis for each group
 - **Request**
-```json
-[
-  {
-    "title": "string",
-    "content": "string",
-  },
-  {
-    "title": "string",
-    "content": "string",
-  }
-]
-```
+  ```json
+  [
+    {
+      "title": "string",
+      "content": "string",
+    },
+    {
+      "title": "string",
+      "content": "string",
+    }
+  ]
+  ```
 
 #### Response Body
-```json
-[
-  {
-    "title": "Generated Group Title",
-    "modeCluster": "Cluster/Category Name",
-    "summary_liberalism": "Liberal perspective summary",
-    "summary_conservative": "Conservative perspective summary",
-    "analyze": "Bias and content analysis details"
-  }
-]
-```
+  ```json
+  [
+    {
+      "title": "Generated Group Title",
+      "modeCluster": "Cluster/Category Name",
+      "summary_liberalism": "Liberal perspective summary",
+      "summary_conservative": "Conservative perspective summary",
+      "analyze": "Bias and content analysis details"
+    }
+  ]
+  ```
 
 ---
 
