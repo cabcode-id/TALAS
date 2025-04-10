@@ -19,3 +19,4 @@ simpletransformers
 swifter
 tensorflow
 yfinance==0.2.54
+torch
