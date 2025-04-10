@@ -19,7 +19,7 @@ def predict_text(model, text):
         text = [text]
     predictions, raw_outputs = model.predict(text)
     return predictions
-
+ 
 def filter_predictions(labels, predictions):
     filtered_predictions = [
     [{word: tag} for token in sentence for word, tag in token.items() if tag in labels and tag != 'O']
