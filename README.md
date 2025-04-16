@@ -100,6 +100,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
+          "embedding": numpy array 
       },
       {
           "title": "string", // Judul artikel
@@ -149,6 +150,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
+          "embedding": numpy array 
       },
       {
           "title": "string", // Judul artikel
@@ -175,6 +177,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
+          "embedding": numpy array 
       },
       {
           "title": "string", // Judul artikel
@@ -202,6 +205,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string", // Judul artikel
           "content": "string", // Isi artikel
+          "embedding": numpy array 
       },
       {
           "title": "string", // Judul artikel
@@ -247,18 +251,22 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       {
           "title": "string",
           "content": "string",
+          "embedding": numpy array 
       },
       {
           "title": "string",
           "content": "string",
+          "embedding": numpy array 
       },
       {
           "title": "string",
           "content": "string",
+          "embedding": numpy array 
       },
       {
           "title": "string",
           "content": "string",
+          "embedding": numpy array 
       }
   ]
   ```
@@ -275,7 +283,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 - **URL**: `/process-all`
 - **Method**: POST
 - **Description**: Process input text articles to group, generate titles, clusters/categories, summaries, and bias analysis for each group
-- **Request**
+- **Request | If past already embedded article, please pass "embedding" too.**
   ```json
   [
     {
@@ -288,7 +296,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
     }
   ]
   ```
-- **Response**
+- **Response | Warning: Does not return embedding of each news content. If used on existing already embedded articles, please pass the embedding too.**
   ```json
   [
     {
@@ -307,7 +315,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 - **URL**: `/antipode`
 - **Method**: POST
 - **Description**: Menemukan artikel dengan sudut pandang yang berlawanan dari artikel yang diberikan.
-- **Request**:
+- **Request | Pass embedding if available.**:
   ```json
   {
       "article": {
