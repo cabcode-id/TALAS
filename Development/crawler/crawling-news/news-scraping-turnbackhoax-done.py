@@ -5,6 +5,7 @@ from datetime import datetime
 import re
 import csv
 import time
+from scraper_config import get_output_path
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"
@@ -88,6 +89,7 @@ def get_todays_news_links(url):
 
 def main():
     base_url = "https://turnbackhoax.id/"
+    source = "TurnBackHoax"
     
     # Tetapkan tanggal hari ini untuk semua entri
     today_date = datetime.today().strftime("%Y-%m-%d")
@@ -102,7 +104,9 @@ def main():
         details = parse_article(article['link'])
         article.update({
             "date": today_date, 
-            "content": details["content"]
+            "content": details["content"],
+            "source": source,
+            "image": ""
         })
         time.sleep(1)
     
@@ -114,15 +118,24 @@ def main():
         print()
     
     filename = "dataset_turnbackhoax.csv"
-    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['title', 'link', 'date', 'content', 'is_fake']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+    output_path = get_output_path(filename)
+    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['id', 'title', 'source', 'url', 'image', 'date', 'content']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         writer.writeheader()
-        for article in today_news:
-            writer.writerow(article)
+        for idx, article in enumerate(today_news, 1):
+            writer.writerow({
+                'id': idx,
+                'title': article['title'],
+                'source': article['source'],
+                'url': article['link'],
+                'image': article['image'],
+                'date': article['date'],
+                'content': article['content']
+            })
     
-    print(f"Data has been saved to {filename}")
+    print(f"Data has been saved to {output_path}")
 
 if __name__ == "__main__":
     main()

@@ -4,6 +4,7 @@ from datetime import datetime
 import time
 import sys
 import csv
+from scraper_config import get_output_path
 
 def extract_article_content(url):
     try:
@@ -46,20 +47,29 @@ def extract_article_content(url):
 
 def save_to_csv(articles_data, filename="kompas_news.csv"):
     """Save article data to CSV file"""
-    fieldnames = ['title', 'link', 'date', 'content', 'is_fake']
+    output_path = get_output_path(filename)
+    fieldnames = ['id', 'title', 'source', 'url', 'image', 'date', 'content']
     
-    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        for article in articles_data:
-            writer.writerow(article)
+        for i, article in enumerate(articles_data, 1):
+            writer.writerow({
+                'id': i,
+                'title': article['title'],
+                'source': 'Kompas',
+                'url': article['link'],
+                'image': '',
+                'date': article['date'],
+                'content': article['content']
+            })
     
-    print(f"Saved {len(articles_data)} articles to {filename}")
+    print(f"Saved {len(articles_data)} articles to {output_path}")
 
 def scrape_kompas_news():
     today = datetime.now()
     date_for_url = today.strftime("%Y-%m-%d")  # URL format: 2025-03-14
-    date_for_comparison = today.strftime("%d/%m/%Y")  # Text format: 14/03/2025
+    date_for_comparison = today.strftime("%Y-%m-%d")  # Database format: 2025-03-14
         
     articles_data = []  #  store dictionaries of article data
     all_articles = []  #  store tuples of (link, title)
@@ -195,8 +205,7 @@ def scrape_kompas_news():
             'title': title,
             'link': link,
             'date': date_for_comparison,
-            'content': content,
-            'is_fake': 0
+            'content': content
         })
         
         # Add a small delay to avoid overloading the server
