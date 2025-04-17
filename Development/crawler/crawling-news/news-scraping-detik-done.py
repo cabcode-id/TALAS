@@ -5,10 +5,11 @@ import os
 import csv
 import time 
 import re
+from scraper_config import get_output_path
 
 # Tanggal yang mau dimasukkan ke csv
 def current_date():
-    return time.strftime("%d %B %Y", time.localtime())
+    return datetime.date.today().strftime("%Y-%m-%d")
 
 # URL yang mau discrape
 def generate_url():
@@ -74,17 +75,19 @@ def extract_content(url):
         return ""
 
 def write_to_csv(data, filename):
-    file_exists = os.path.isfile(filename)
-    with open(filename, mode='a', newline='', encoding='utf-8') as file:
+    output_path = get_output_path(filename)
+    with open(output_path, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-
-        if not file_exists:
-            writer.writerow(['title', 'link', 'date', 'content', 'is_fake'])
-
+        writer.writerow(['id', 'title', 'source', 'url', 'image', 'date', 'content'])
+        id_counter = 1
         for row in data:
-            writer.writerow(row)
+            writer.writerow([id_counter, row[0], "Detik", row[1], "", row[2], row[3]])
+            id_counter += 1
 
 def extract_title(text):
+    if not isinstance(text, str):
+        text = str(text)
+    
     text = text.lower()
 
     start_phrases = [
@@ -103,14 +106,11 @@ def extract_title(text):
 
 def main():
     url = generate_url()
-
     pagination_links = get_numbered_links(url)
-
     articles = {}
 
     for page_link in pagination_links:
         page_articles = get_articles(page_link)
-
         if page_articles:
             for key, value in page_articles.items():
                 if key in articles:
@@ -118,41 +118,17 @@ def main():
                 else:
                     articles[key] = value if isinstance(value, list) else [value]   
     
-    data = []
+    processed_data = []
     for link, title in articles.items():
-        content = extract_content(link)
-        date = current_date()   
-        is_fake = 0
-        data.append([title, link, date, content, is_fake])
+        raw_content = extract_content(link)
+        date = current_date()
+        processed_title = extract_title(title)
+        processed_data.append([processed_title, link, date, raw_content])
         time.sleep(2)  
 
-    filename = 'dataset_detik_raw.csv'
-    write_to_csv(data, filename)
-    print(f"Data has been written to {filename}")
-
-    with open('dataset_detik_raw.csv', 'r') as csvfile:
-        reader = csv.reader(csvfile)
-
-        next(reader)
-
-        modified_data = []
-
-        for row in reader:
-            title = row[0]
-            link = row[1]
-            date = row[2]
-            content = row[3]
-            is_fake = row[4]
-
-            extracted_title = extract_title(title)
-
-            modified_data.append([extracted_title, link, date, content, is_fake])
-
     filename = 'dataset_detik.csv'
-
-    write_to_csv(modified_data, filename)
-
-    print(f"Data has been written to {filename}")
+    write_to_csv(processed_data, filename)
+    print(f"Data has been written to {get_output_path(filename)}")
 
 if __name__ == "__main__":
     main()

@@ -3,31 +3,35 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime
+from scraper_config import get_output_path
 
 # Function to write data to CSV file
-def write_to_csv(data, filename, write_header=False):
-    with open(filename, mode='a', newline='', encoding='utf-8') as file:
+def write_to_csv(data, filename):
+    output_path = get_output_path(filename)
+    with open(output_path, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        if write_header:
-            # Write header row
-            writer.writerow(['title', 'link', 'date', 'content', 'is_fake'])
+        # Write header row
+        writer.writerow(['id', 'title', 'source', 'url', 'image', 'date', 'content'])
         # Write data rows
+        id_counter = 1
         for row in data:
-            writer.writerow(row)
-    
+            # Add id as first element and insert source and empty image
+            processed_row = [id_counter, row[0], "Kompas", row[1], "", row[2], row[3]]
+            writer.writerow(processed_row)
+            id_counter += 1
 
-# Ambil tanggal hari ini, untuk masukkan ke CSV
+# Get today's date for CSV
 def get_date():
-   return datetime.today().strftime('%d/%m/%Y')
+   return datetime.today().strftime('%Y-%m-%d')
 
-# URL untuk halaman-halaman berikutnya, kalo page 1 pakai url biasa. 
+# URL for next pages
 def get_url(base_url, page):
    return f"{base_url}/{page}" if page > 1 else base_url
   
 def extract_content(text):
     text = text.lower()
 
-    # Kata-kata yang biasanya ada di awal berita
+    # Words typically found at the beginning of news
     start_phrases = [
         "kompas.com - ",
         ".kompas.com",
@@ -43,10 +47,10 @@ def extract_content(text):
     else:
         return text
     
-# Fungsi utama buat ambil data dari web Kompas hoaks atau fakta
+# Main function to get data from Kompas hoax or fact
 def get_data():
-    # Ambil tanggal hari ini buat filter berita
-    today = datetime.today().strftime('%d/%m/%Y')
+    # Get today's date to filter news
+    today = get_date()
     data = []
     url = get_url('https://www.kompas.com/cekfakta/hoaks-atau-fakta', 1)
     page = requests.get(url)
@@ -54,11 +58,19 @@ def get_data():
 
     news_items = soup.find_all('a', class_='cekfakta-list-link')
     for item in news_items:
-        # Cek tanggal berita
+        # Check news date
         date_elem = item.find('p', class_='cekfakta-text-date')
 
         date_str = date_elem.get_text(strip=True).split(',')[0]
-        if date_str != today:
+        # Convert to YYYY-MM-DD format
+        try:
+            date_obj = datetime.strptime(date_str, '%d/%m/%Y')
+            formatted_date = date_obj.strftime('%Y-%m-%d')
+        except ValueError:
+            formatted_date = today  # Fallback to today if parsing fails
+            
+        # Skip if older than today
+        if formatted_date != today:
             break  # Stop if we find an older date
         
         title = item.find('h1').get_text(strip=True)
@@ -76,43 +88,16 @@ def get_data():
         content_soup = BeautifulSoup(content_response.text, 'html.parser')
         content_paragraphs = content_soup.find('div', class_='read__content').find_all('p')
         content = ' '.join(p.get_text(strip=True) for p in content_paragraphs)
-        extracted_content = extract_content(content)
+        processed_content = extract_content(content)
 
-        is_fake = 1 if category != "HOAKS" else 0  
-
-        data.append([title, link, today, extracted_content, is_fake])
+        data.append([title, link, formatted_date, processed_content])
     return data
 
-def modify_csv(filename):
-    with open(filename, 'r', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile)
-
-        next(reader)
-
-        modified_data = []
-
-        for row in reader:
-            title = row[0]
-            link = row[1]
-            date = row[2]
-            content = row[3]
-            is_fake = row[4]
-
-            extracted_content = extract_content(content)
-
-            modified_data.append([title, link, date, extracted_content, is_fake])
-
-        filename = 'dataset_kompas_hoaks.csv'
-
-        write_to_csv(modified_data, filename, write_header=True)
-
-        print(f"Data has been written to {filename}")
-
 def main():
-    data = get_data()
-    filename = 'dataset_raw_kompas_hoaks.csv'
-    write_to_csv(data, filename, write_header=True)
-    modify_csv(filename)
+    processed_data = get_data()
+    filename = 'dataset_kompas_hoaks.csv'
+    write_to_csv(processed_data, filename)
+    print(f"Data has been written to {get_output_path(filename)}")
 
 if __name__ == '__main__':
     main()

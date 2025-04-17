@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime
+from scraper_config import get_output_path
 
 def get_date():
     return datetime.today().strftime("%Y-%m-%d")
@@ -23,9 +24,15 @@ def get_tempo_links():
     
     return list(set(links_data))
 
+def extract_content(text):
+    match = re.search(r"(jakarta -|jakarta-)(.*)", text.lower(), re.DOTALL)
+    return match.group(2).strip() if match else text
+
 def scrape_tempo_articles(tempo_links):
     data = []
     date = get_date()
+    source = "Tempo"
+    id_counter = 1
     
     for title, link in tempo_links:
         category, title_news = title.split(':', 1) if ':' in title else (title, title)
@@ -34,38 +41,35 @@ def scrape_tempo_articles(tempo_links):
         response = requests.get(link)
         soup = BeautifulSoup(response.text, 'html.parser')
         detail_in = soup.find('div', 'detail-in')
-        p = detail_in.find_all('p')
-        content = ' '.join(p.get_text() for p in p)
         
-        data.append([title_news, link, date, content, is_fake])
+        if detail_in:
+            p = detail_in.find_all('p')
+            content = ' '.join(p.get_text() for p in p)
+            
+            # Process content directly instead of writing to raw file first
+            processed_content = extract_content(content)
+            
+            # Empty string for image
+            image = ""
+            
+            data.append([id_counter, title_news, source, link, image, date, processed_content])
+            id_counter += 1
     
     return data
 
 def write_to_csv(data, filename):
-    with open(filename, mode='w', newline='', encoding='utf-8') as file:
+    output_path = get_output_path(filename)
+    with open(output_path, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(['title', 'link', 'date', 'content', 'is_fake'])
+        writer.writerow(['id', 'title', 'source', 'url', 'image', 'date', 'content'])
         writer.writerows(data)
 
-def extract_content(text):
-    match = re.search(r"(jakarta -|jakarta-)(.*)", text.lower(), re.DOTALL)
-    return match.group(2).strip() if match else text
-
-def process_raw(filename):
-    with open(filename, 'r', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        modified_data = [[row['title'], row['link'], row['date'], extract_content(row['content']), row['is_fake']] for row in reader]
-    
-    write_to_csv(modified_data, 'dataset_tempo.csv')
-    print("Data has been written to dataset_tempo.csv")
-
 def main():
-    filename = 'dataset_tempo_raw.csv'
     tempo_links = get_tempo_links()
-    scraped = scrape_tempo_articles(tempo_links)
-    write_to_csv(scraped, filename)
-    print(f"Data has been written to {filename}")
-    process_raw(filename)
+    scraped_data = scrape_tempo_articles(tempo_links)
+    filename = 'dataset_tempo.csv'
+    write_to_csv(scraped_data, filename)
+    print(f"Data has been written to {get_output_path(filename)}")
 
 if __name__ == "__main__":
     main()

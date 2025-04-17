@@ -11,7 +11,6 @@ from collections import Counter
 
 from flask import request, jsonify, redirect, url_for
 
-# Add route for root URL
 @app.route('/')
 def index():
     return redirect(url_for('db_blueprint.news_page'))
