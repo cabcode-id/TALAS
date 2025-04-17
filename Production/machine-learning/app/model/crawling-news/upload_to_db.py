@@ -15,7 +15,6 @@ DB_CONFIG = {
 }
 
 def connect_to_database():
-    """Establish connection to the MySQL database"""
     try:
         connection = pymysql.connect(**DB_CONFIG)
         print("Successfully connected to the database!")
@@ -25,12 +24,10 @@ def connect_to_database():
         return None
 
 def get_all_csv_files():
-    """Get all CSV files from the output directory"""
     csv_pattern = os.path.join(OUTPUT_DIR, '*.csv')
     return glob.glob(csv_pattern)
 
 def upload_csv_to_db(csv_file, connection):
-    """Upload data from a CSV file to the database"""
     try:
         # Get the CSV filename without extension for logging
         filename = os.path.basename(csv_file)
@@ -79,7 +76,6 @@ def upload_csv_to_db(csv_file, connection):
                 except Exception as e:
                     print(f"Error inserting row: {e}")
             
-            # Commit the transaction
             connection.commit()
             print(f"Successfully uploaded data from {filename}")
             
@@ -87,13 +83,10 @@ def upload_csv_to_db(csv_file, connection):
         print(f"Error processing file {csv_file}: {e}")
 
 def main():
-    """Main function to run the database upload process"""
-    # Connect to the database
     connection = connect_to_database()
     if not connection:
         return
     
-    # Get all CSV files
     csv_files = get_all_csv_files()
     if not csv_files:
         print("No CSV files found in the output directory.")
@@ -101,11 +94,9 @@ def main():
     
     print(f"Found {len(csv_files)} CSV files to process.")
     
-    # Process each CSV file
     for csv_file in csv_files:
         upload_csv_to_db(csv_file, connection)
     
-    # Close the database connection
     connection.close()
     print("Database connection closed.")
 
