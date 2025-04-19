@@ -1,24 +1,7 @@
-import csv
 import requests
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime
-from scraper_config import get_output_path
-
-# Function to write data to CSV file
-def write_to_csv(data, filename):
-    output_path = get_output_path(filename)
-    with open(output_path, mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        # Write header row
-        writer.writerow(['id', 'title', 'source', 'url', 'image', 'date', 'content'])
-        # Write data rows
-        id_counter = 1
-        for row in data:
-            # Add id as first element and insert source and empty image
-            processed_row = [id_counter, row[0], "Kompas", row[1], "", row[2], row[3]]
-            writer.writerow(processed_row)
-            id_counter += 1
 
 # Get today's date for CSV
 def get_date():
@@ -47,7 +30,6 @@ def extract_content(text):
     else:
         return text
     
-# Main function to get data from Kompas hoax or fact
 def get_data():
     # Get today's date to filter news
     today = get_date()
@@ -76,10 +58,7 @@ def get_data():
         title = item.find('h1').get_text(strip=True)
         part_title = title.split(']')
 
-        category = "UNKNOWN"  
-
         if len(part_title) == 2:
-            category = part_title[0].strip('[').strip()
             title = part_title[1].strip()
         
         link = item['href']
@@ -93,11 +72,25 @@ def get_data():
         data.append([title, link, formatted_date, processed_content])
     return data
 
+def crawl_kompas_hoax():
+    raw_data = get_data()
+    
+    # Convert to dictionary format without IDs
+    formatted_data = []
+    for row in raw_data:
+        formatted_data.append({
+            'title': row[0],
+            'source': 'Kompas',
+            'url': row[1],
+            'image': '',
+            'date': row[2],
+            'content': row[3]
+        })
+    
+    return formatted_data
+
 def main():
-    processed_data = get_data()
-    filename = 'dataset_kompas_hoaks.csv'
-    write_to_csv(processed_data, filename)
-    print(f"Data has been written to {get_output_path(filename)}")
+    return crawl_kompas_hoax()
 
 if __name__ == '__main__':
     main()
