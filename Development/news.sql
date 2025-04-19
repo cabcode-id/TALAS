@@ -29,19 +29,19 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `articles` (
   `id` int(10) NOT NULL,
-  `title` text NOT NULL,
-  `source` text NOT NULL,
-  `url` text NOT NULL,
-  `image` text NOT NULL,
-  `date` date NOT NULL,
-  `content` text NOT NULL,
-  `embedding` text NOT NULL,
-  `cleaned` text NOT NULL,
-  `title_index` int(255) NOT NULL,
-  `cluster` int(10) NOT NULL,
-  `bias` int(10) NOT NULL,
-  `hoax` float NOT NULL,
-  `ideology` int(10) NOT NULL
+  `title` text DEFAULT NULL,
+  `source` text DEFAULT NULL,
+  `url` text DEFAULT NULL,
+  `image` text DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `content` text DEFAULT NULL,
+  `embedding` text DEFAULT NULL,
+  `cleaned` text DEFAULT NULL,
+  `title_index` int(255) DEFAULT NULL,
+  `cluster` int(10) DEFAULT NULL,
+  `bias` int(10) DEFAULT NULL,
+  `hoax` float DEFAULT NULL,
+  `ideology` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
