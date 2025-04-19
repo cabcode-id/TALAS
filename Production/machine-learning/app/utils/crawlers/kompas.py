@@ -2,9 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import time
-import sys
-import csv
-from scraper_config import get_output_path
 
 def extract_article_content(url):
     try:
@@ -45,28 +42,7 @@ def extract_article_content(url):
         print(f"Error extracting content from {url}: {e}")
         return ""
 
-def save_to_csv(articles_data, filename="kompas_news.csv"):
-    """Save article data to CSV file"""
-    output_path = get_output_path(filename)
-    fieldnames = ['id', 'title', 'source', 'url', 'image', 'date', 'content']
-    
-    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for i, article in enumerate(articles_data, 1):
-            writer.writerow({
-                'id': i,
-                'title': article['title'],
-                'source': 'Kompas',
-                'url': article['link'],
-                'image': '',
-                'date': article['date'],
-                'content': article['content']
-            })
-    
-    print(f"Saved {len(articles_data)} articles to {output_path}")
-
-def scrape_kompas_news():
+def crawl_kompas_news():
     today = datetime.now()
     date_for_url = today.strftime("%Y-%m-%d")  # URL format: 2025-03-14
     date_for_comparison = today.strftime("%Y-%m-%d")  # Database format: 2025-03-14
@@ -211,19 +187,23 @@ def scrape_kompas_news():
         # Add a small delay to avoid overloading the server
         time.sleep(1)
     
-    # Save the collected data to CSV
-    save_to_csv(articles_data)
+    # Format data for return
+    formatted_data = []
+    for i, article in enumerate(articles_data, 1):
+        formatted_data.append({
+            'id': i,
+            'title': article['title'],
+            'source': 'Kompas',
+            'url': article['link'],
+            'image': '',
+            'date': article['date'],
+            'content': article['content']
+        })
     
-    return articles_data
+    return formatted_data
+
+def main():
+    return crawl_kompas_news()
 
 if __name__ == "__main__":
-    articles = scrape_kompas_news()
-    
-    # Print summary of collected articles
-    print("\nSummary of collected articles:")
-    for i, article in enumerate(articles, 1):
-        title = article['title'] if article['title'] else "[No title found]"
-        content_preview = article['content'][:100] + "..." if len(article['content']) > 100 else article['content']
-        print(f"{i}. {title}")
-        print(f"   Content preview: {content_preview}")
-        print()
+    main()

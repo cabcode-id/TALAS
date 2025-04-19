@@ -1,11 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-import json
 from datetime import datetime
 import re
-import csv
 import time
-from scraper_config import get_output_path
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"
@@ -87,7 +84,7 @@ def get_todays_news_links(url):
     
     return news_links
 
-def main():
+def crawl_turnbackhoax():
     base_url = "https://turnbackhoax.id/"
     source = "TurnBackHoax"
     
@@ -99,43 +96,25 @@ def main():
     print(f"Found {len(today_news)} news articles from today. Extracting full content...")
     
     # Ekstrak konten untuk setiap artikel
+    articles_data = []
     for i, article in enumerate(today_news):
         print(f"Processing article {i+1}/{len(today_news)}: {article['title']}")
         details = parse_article(article['link'])
-        article.update({
-            "date": today_date, 
-            "content": details["content"],
+        
+        articles_data.append({
+            "title": article['title'],
             "source": source,
-            "image": ""
+            "url": article['link'],
+            "image": "",
+            "date": today_date, 
+            "content": details["content"]
         })
         time.sleep(1)
     
-    print(f"Processed {len(today_news)} news articles:")
-    for idx, news in enumerate(today_news, 1):
-        status = "FAKE" if news['is_fake'] == 1 else "UNVERIFIED"
-        print(f"{idx}. {news['title']} ({status})")
-        print(f"   {news['link']}")
-        print()
-    
-    filename = "dataset_turnbackhoax.csv"
-    output_path = get_output_path(filename)
-    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['id', 'title', 'source', 'url', 'image', 'date', 'content']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        
-        writer.writeheader()
-        for idx, article in enumerate(today_news, 1):
-            writer.writerow({
-                'id': idx,
-                'title': article['title'],
-                'source': article['source'],
-                'url': article['link'],
-                'image': article['image'],
-                'date': article['date'],
-                'content': article['content']
-            })
-    
-    print(f"Data has been saved to {output_path}")
+    return articles_data
+
+def main():
+    return crawl_turnbackhoax()
 
 if __name__ == "__main__":
     main()

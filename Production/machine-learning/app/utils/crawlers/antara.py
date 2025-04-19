@@ -4,30 +4,6 @@ import re
 import time
 from bs4 import BeautifulSoup
 from datetime import datetime
-from scraper_config import get_output_path
-
-def write_to_csv(data, filename):
-    output_path = get_output_path(filename)
-    with open(output_path, mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        writer.writerow(['id', 'title', 'source', 'url', 'image', 'date', 'content'])
-        id_counter = 1
-        for row in data:
-            writer.writerow([id_counter] + row)
-            id_counter += 1
-
-# Untuk membuat string tanggal sesuai dengan dalam website
-def get_date():
-    bulan = {
-        "January": "Januari", "February": "Februari", "March": "Maret", "April": "April",
-        "May": "Mei", "June": "Juni", "July": "Juli", "August": "Agustus",
-        "September": "September", "October": "Oktober", "November": "November", "December": "Desember"
-    }
-
-    raw_date = get_raw_date()
-    for eng, indo in bulan.items():
-        raw_date = raw_date.replace(eng, indo)
-    return raw_date
 
 # Tanggal yang dimasukkan ke csv. 
 def get_raw_date():
@@ -58,24 +34,23 @@ def find_links(url):
             parent = parent.find_parent()
     return links_dict
 
-# Jika judul = "hoaks!" atau "disinformasi!", maka judul, link, tanggal, dan konten akan diambil.
-def find_hoax(links_dict):
+# Mengumpulkan artikel dari link yang ditemukan.
+def collect_articles(links_dict):
     data = []
     raw_date = get_raw_date()
-    source = "Antara News"
+    source = "antara"
     for title, link in links_dict.items():
-        if "hoaks!" in title.lower() or "disinformasi!" in title.lower():
-            try:
-                get_content = requests.get(link, timeout=10)
-                get_content.raise_for_status()
-                date = raw_date
-                content = find_content(link)
-                # Process content directly
-                processed_content = extract_content(content)
-                image = ""
-                data.append([title, source, link, image, date, processed_content])
-            except requests.exceptions.RequestException as e:
-                print(f"Error fetching content for {link}: {e}")
+        try:
+            get_content = requests.get(link, timeout=10)
+            get_content.raise_for_status()
+            date = raw_date
+            content = find_content(link)
+            # Process content directly
+            processed_content = extract_content(content)
+            image = ""
+            data.append([title, source, link, image, date, processed_content])
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching content for {link}: {e}")
         time.sleep(2)
     return data
 
@@ -119,14 +94,27 @@ def extract_content(text):
     match = re.search(pattern, text, re.DOTALL)
     return match.group(2).strip() if match else text
 
-def main():
+def crawl_antara():
     url = 'https://www.antaranews.com/tag/cek-fakta/'
     links_dict = find_links(url)
-    data = find_hoax(links_dict)
+    data = collect_articles(links_dict)
     
-    filename = 'dataset_antara_hoaks.csv'
-    write_to_csv(data, filename)
-    print(f"Data has been written to {get_output_path(filename)}")
+    # Format data for return
+    formatted_data = []
+    for row in data:
+        formatted_data.append({
+            'title': row[0],
+            'source': row[1],
+            'url': row[2],
+            'image': row[3],
+            'date': row[4],
+            'content': row[5]
+        })
+    
+    return formatted_data
+
+def main():
+    return crawl_antara()
 
 if __name__ == "__main__":
     main()

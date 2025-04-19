@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, render_template
 from flask_mysqldb import MySQL
 import re 
+from app.utils.crawlers import main as run_crawlers
 
 db_blueprint = Blueprint('db_blueprint', __name__)
 
@@ -45,8 +46,6 @@ def test_connection():
         return jsonify({"success": True, "tables": tables})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-
-
 
 @db_blueprint.route("/news_page", methods=["GET"])
 def news_page():
@@ -191,103 +190,66 @@ def insert_article():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@db_blueprint.route("/startcrawler", methods=["POST"])
-def start_crawler():
+@db_blueprint.route("/run-crawlers", methods=["POST"])
+def run_crawlers_endpoint():
     try:
-        import os
-        import subprocess
-        import sys
-        import threading
-        from datetime import datetime
+        # Get optional parameters from the request
+        params = request.json or {}
         
-        crawler_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
-                                  "model", "crawling-news")
+        # Run all crawlers and get combined results
+        results = run_crawlers(**params)
         
-        crawler_files = [f for f in os.listdir(crawler_dir) 
-                        if f.startswith("news-scraping") and 
-                        f.endswith(".py") and 
-                        os.path.isfile(os.path.join(crawler_dir, f))]
+        if not results:
+            return jsonify({"success": True, "message": "Crawlers executed but no results were returned", "count": 0}), 200
         
-        def run_crawler(script_path, script_name):
+        # Insert results into the database
+        inserted_count = 0
+        cur = mysql.connection.cursor()
+        
+        for article in results:
             try:
-                timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                log_file_path = os.path.join(crawler_dir, f"log_{script_name}_{timestamp}.txt")
+                # Extract article data with fallbacks to empty values
+                title = article.get('title', '')
+                source = article.get('source', 'Crawler')
+                url = article.get('url', '')
+                image = article.get('image', '')
+                date = article.get('date', '')
+                content = article.get('content', '')
                 
-                with open(log_file_path, 'w') as log_file:
-                    process = subprocess.Popen(
-                        [sys.executable, script_path],
-                        stdout=log_file,
-                        stderr=log_file,
-                        cwd=crawler_dir
-                    )
-            except Exception as e:
-                print(f"Error running {script_name}: {str(e)}")
+                # Skip articles without a title or content
+                if not title or not content:
+                    continue
+                
+                # Get the next ID for this article
+                cur.execute("SELECT MAX(id) as max_id FROM articles")
+                result = cur.fetchone()
+                next_id = 1
+                if result and result['max_id'] is not None:
+                    next_id = result['max_id'] + 1
+                
+                # Then insert into articles table with auto-incremented ID
+                cur.execute(
+                    """INSERT INTO articles 
+                       (id, title, source, url, image, date, content) 
+                       VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                    (next_id, title, source, url, image, date, content)
+                )
+                mysql.connection.commit()
+                inserted_count += 1
+                
+            except Exception as article_error:
+                # Log the error but continue with other articles
+                print(f"Error inserting article: {str(article_error)}")
+                continue
         
-        threads = []
-        running_crawlers = []
+        cur.close()
         
-        for crawler_file in crawler_files:
-            script_path = os.path.join(crawler_dir, crawler_file)
-            t = threading.Thread(
-                target=run_crawler,
-                args=(script_path, crawler_file),
-                daemon=True
-            )
-            t.start()
-            threads.append(t)
-            running_crawlers.append(crawler_file)
-            
         return jsonify({
             "success": True,
-            "message": f"Started {len(running_crawlers)} crawler scripts",
-            "running_crawlers": running_crawlers
+            "message": f"Crawlers executed and data inserted successfully",
+            "total_results": len(results),
+            "inserted_count": inserted_count
         })
-            
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-    
-@db_blueprint.route("/sendToDB", methods=["POST"])
-def send_to_db():
-    try:
-        import os
-        import sys
-        import subprocess
-        from datetime import datetime
         
-        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
-                                 "model", "crawling-news", "upload_to_db.py")
-        
-        if not os.path.exists(script_path):
-            return jsonify({
-                "success": False,
-                "error": f"Upload script not found at {script_path}"
-            }), 404
-            
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
-                              "model", "crawling-news")
-        log_file_path = os.path.join(log_dir, f"upload_to_db_log_{timestamp}.txt")
-        
-        try:
-            with open(log_file_path, 'w') as log_file:
-                process = subprocess.Popen(
-                    [sys.executable, script_path],
-                    stdout=log_file,
-                    stderr=log_file,
-                    cwd=os.path.dirname(script_path)
-                )
-                
-            return jsonify({
-                "success": True,
-                "message": "Database upload process started in background",
-                "log_file": log_file_path
-            })
-                
-        except Exception as e:
-            return jsonify({
-                "success": False,
-                "error": f"Error running upload script: {str(e)}"
-            }), 500
-            
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

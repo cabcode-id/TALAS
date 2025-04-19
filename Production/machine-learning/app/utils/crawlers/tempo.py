@@ -1,9 +1,7 @@
-import csv
 import requests
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime
-from scraper_config import get_output_path
 
 def get_date():
     return datetime.today().strftime("%Y-%m-%d")
@@ -32,11 +30,9 @@ def scrape_tempo_articles(tempo_links):
     data = []
     date = get_date()
     source = "Tempo"
-    id_counter = 1
     
     for title, link in tempo_links:
         category, title_news = title.split(':', 1) if ':' in title else (title, title)
-        is_fake = 1 if category in ["Menyesatkan", "Keliru"] else 0
         
         response = requests.get(link)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -52,24 +48,23 @@ def scrape_tempo_articles(tempo_links):
             # Empty string for image
             image = ""
             
-            data.append([id_counter, title_news, source, link, image, date, processed_content])
-            id_counter += 1
+            data.append({
+                'title': title_news,
+                'source': source,
+                'url': link,
+                'image': image,
+                'date': date,
+                'content': processed_content
+            })
     
     return data
 
-def write_to_csv(data, filename):
-    output_path = get_output_path(filename)
-    with open(output_path, mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        writer.writerow(['id', 'title', 'source', 'url', 'image', 'date', 'content'])
-        writer.writerows(data)
+def crawl_tempo():
+    tempo_links = get_tempo_links()
+    return scrape_tempo_articles(tempo_links)
 
 def main():
-    tempo_links = get_tempo_links()
-    scraped_data = scrape_tempo_articles(tempo_links)
-    filename = 'dataset_tempo.csv'
-    write_to_csv(scraped_data, filename)
-    print(f"Data has been written to {get_output_path(filename)}")
+    return crawl_tempo()
 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,17 @@
 import datetime
 import requests
 from bs4 import BeautifulSoup
-import os
-import csv
 import time 
-import re
-from scraper_config import get_output_path
+
+# Request headers to mimic a browser
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'DNT': '1',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+}
 
 # Tanggal yang mau dimasukkan ke csv
 def current_date():
@@ -13,13 +19,12 @@ def current_date():
 
 # URL yang mau discrape
 def generate_url():
-    today = datetime.date.today()
-    formatted_date = today.strftime("%m%%2F%d%%2F%Y")  # MM%2FDD%2FYYYY
+    formatted_date = datetime.date.today().strftime("%m%%2F%d%%2F%Y")  # MM%2FDD%2FYYYY
     return f"https://news.detik.com/berita/indeks?date={formatted_date}"
 
 # Buat list halaman-halaman yang ada pada tanggal tsb (page 1, page 2, page 3, etc.)
 def get_numbered_links(url):
-    response = requests.get(url)
+    response = requests.get(url, headers=HEADERS)
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Cari prev dan next
@@ -39,7 +44,7 @@ def get_numbered_links(url):
 
 # Ambil artikel dari halaman tsb
 def get_articles(url):
-    response = requests.get(url)
+    response = requests.get(url, headers=HEADERS)
     soup = BeautifulSoup(response.content, 'html.parser')
 
     articles = {}  
@@ -59,7 +64,7 @@ def get_articles(url):
 
 def extract_content(url):
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=HEADERS, timeout=10)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -74,61 +79,43 @@ def extract_content(url):
         print(f"Error fetching content from {url}: {e}")
         return ""
 
-def write_to_csv(data, filename):
-    output_path = get_output_path(filename)
-    with open(output_path, mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        writer.writerow(['id', 'title', 'source', 'url', 'image', 'date', 'content'])
-        id_counter = 1
-        for row in data:
-            writer.writerow([id_counter, row[0], "Detik", row[1], "", row[2], row[3]])
-            id_counter += 1
-
-def extract_title(text):
-    if not isinstance(text, str):
-        text = str(text)
-    
-    text = text.lower()
-
-    start_phrases = [
-        "\n"
-    ]
-
-    start_pattern = "|".join(map(re.escape, start_phrases))
-    pattern = f"({start_pattern})(.*)"
-
-    match = re.search(pattern, text, re.DOTALL)
-
-    if match:
-        return match.group(2).strip()
-    else:
-        return text
-
-def main():
+def crawl_detik():
     url = generate_url()
     pagination_links = get_numbered_links(url)
+    # Add the main URL to pagination links if it doesn't exist
+    if url not in pagination_links:
+        pagination_links.append(url)
+        
     articles = {}
 
     for page_link in pagination_links:
         page_articles = get_articles(page_link)
         if page_articles:
-            for key, value in page_articles.items():
-                if key in articles:
-                    articles[key].extend(value if isinstance(value, list) else [value])
-                else:
-                    articles[key] = value if isinstance(value, list) else [value]   
+            articles.update(page_articles)
     
     processed_data = []
     for link, title in articles.items():
         raw_content = extract_content(link)
         date = current_date()
-        processed_title = extract_title(title)
-        processed_data.append([processed_title, link, date, raw_content])
-        time.sleep(2)  
+        processed_data.append([title, link, date, raw_content])
+        time.sleep(2)
+    
+    # Format data for return
+    formatted_data = []
+    for row in processed_data:
+        formatted_data.append({
+            'title': row[0],
+            'source': "Detik",
+            'url': row[1],
+            'image': "",
+            'date': row[2],
+            'content': row[3]
+        })
+    
+    return formatted_data
 
-    filename = 'dataset_detik.csv'
-    write_to_csv(processed_data, filename)
-    print(f"Data has been written to {get_output_path(filename)}")
+def main():
+    return crawl_detik()
 
 if __name__ == "__main__":
     main()
