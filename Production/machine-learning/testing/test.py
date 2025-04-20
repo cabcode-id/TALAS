@@ -86,6 +86,28 @@ def test_run_crawlers():
             )
             return response.json
 
+# Test the /groupArticles endpoint
+def test_group_articles():
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.post(
+                '/groupArticles',
+                data=json.dumps({}), 
+                content_type='application/json'
+            )
+            return response.json
+
+# Test the /processArticles endpoint
+def test_process_articles():
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.post(
+                '/processArticles',
+                data=json.dumps({}), 
+                content_type='application/json'
+            )
+            return response.json
+
 # =============================================================================================
 
 def FetchDbToJson(db_config):
@@ -296,7 +318,7 @@ db_config = {
 
 # # Kelompokkan data ke title_index (Artikel yang ceritanya sama = 1 List), update ke database
 # # Outputnya [  [1,2,3], [4,5,6] ], dimana 1 2 3 adalah artikel yang ceritanya sama, 4 5 6 adalah artikel yang ceritanya sama
-# GrouptoDB(test_data, db_config)
+# GrouptoDB(test_data, db_config)gro
 
 # # Embedding, hoax, dll sudah dapat, jadi ditarik lagi dari db
 # articles = FetchDbToJson(db_config)
@@ -322,6 +344,14 @@ db_config = {
 # Test the run-crawlers endpoint
 print("Testing run-crawlers endpoint:")
 print(test_run_crawlers())
+
+# Test the groupArticles endpoint
+print("Testing groupArticles endpoint:")
+print(test_group_articles())
+
+# Test the processArticles endpoint
+print("Testing processArticles endpoint:")
+print(test_process_articles())
 
 # print(test_endpoint('title', test_data)) 
 # print(test_endpoint('modeCluster', test_data))

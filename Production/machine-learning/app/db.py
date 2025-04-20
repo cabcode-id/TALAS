@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, render_template
 from flask_mysqldb import MySQL
 import re 
+import json
 from app.utils.crawlers import main as run_crawlers
 
 db_blueprint = Blueprint('db_blueprint', __name__)
@@ -105,90 +106,90 @@ def news_article():
 def insert_news_page():
     return render_template("insert_news.html")
 
-@db_blueprint.route("/insert-title", methods=["POST"])
-def insert_title():
-    try:
-        title = request.form.get('title', '')
-        cluster = request.form.get('cluster', '')
-        image = request.form.get('image', '')
-        date = request.form.get('date', '')
-        summary_liberalism = request.form.get('summary_liberalism', '')
-        summary_conservative = request.form.get('summary_conservative', '')
-        analysis = request.form.get('analysis', '')
+# @db_blueprint.route("/insert-title", methods=["POST"])
+# def insert_title():
+#     try:
+#         title = request.form.get('title', '')
+#         cluster = request.form.get('cluster', '')
+#         image = request.form.get('image', '')
+#         date = request.form.get('date', '')
+#         summary_liberalism = request.form.get('summary_liberalism', '')
+#         summary_conservative = request.form.get('summary_conservative', '')
+#         analysis = request.form.get('analysis', '')
         
-        if not title:
-            return jsonify({"success": False, "error": "Title is required"}), 400
+#         if not title:
+#             return jsonify({"success": False, "error": "Title is required"}), 400
             
-        cur = mysql.connection.cursor()
+#         cur = mysql.connection.cursor()
         
-        # Insert record with title_index as NULL (it will be auto-generated if it's an auto-increment field)
-        cur.execute(
-            """INSERT INTO title 
-               (title, cluster, image, date, summary_liberalism, summary_conservative, analysis) 
-               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-            (title, cluster, image, date, summary_liberalism, summary_conservative, analysis)
-        )
-        mysql.connection.commit()
+#         # Insert record with title_index as NULL (it will be auto-generated if it's an auto-increment field)
+#         cur.execute(
+#             """INSERT INTO title 
+#                (title, cluster, image, date, summary_liberalism, summary_conservative, analysis) 
+#                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+#             (title, cluster, image, date, summary_liberalism, summary_conservative, analysis)
+#         )
+#         mysql.connection.commit()
         
-        # Get the ID of the newly inserted record
-        title_index = cur.lastrowid
-        cur.close()
+#         # Get the ID of the newly inserted record
+#         title_index = cur.lastrowid
+#         cur.close()
         
-        return jsonify({
-            "success": True, 
-            "message": "Article inserted successfully",
-            "title": {
-                "title": title,
-                "cluster": cluster,
-                "image": image,
-                "date": date,
-                "title_index": title_index
-            }
-        })
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+#         return jsonify({
+#             "success": True, 
+#             "message": "Article inserted successfully",
+#             "title": {
+#                 "title": title,
+#                 "cluster": cluster,
+#                 "image": image,
+#                 "date": date,
+#                 "title_index": title_index
+#             }
+#         })
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)}), 500
 
-@db_blueprint.route("/insert-article", methods=["POST"])
-def insert_article():
-    try:
-        title = request.form.get('title', '')
-        source = request.form.get('source', 'PukulEnam')
-        url = request.form.get('url', '')
-        image = request.form.get('image', '')
-        date = request.form.get('date', '')
-        content = request.form.get('content', '')
+# @db_blueprint.route("/insert-article", methods=["POST"])
+# def insert_article():
+#     try:
+#         title = request.form.get('title', '')
+#         source = request.form.get('source', 'PukulEnam')
+#         url = request.form.get('url', '')
+#         image = request.form.get('image', '')
+#         date = request.form.get('date', '')
+#         content = request.form.get('content', '')
 
-        if not title or not content:
-            return jsonify({"success": False, "error": "Title and content are required"}), 400
+#         if not title or not content:
+#             return jsonify({"success": False, "error": "Title and content are required"}), 400
             
-        cur = mysql.connection.cursor()
+#         cur = mysql.connection.cursor()
         
-        cur.execute("SELECT MAX(id) as max_id FROM articles")
-        result = cur.fetchone()
-        next_id = 1
-        if result and result['max_id'] is not None:
-            next_id = result['max_id'] + 1
+#         cur.execute("SELECT MAX(id) as max_id FROM articles")
+#         result = cur.fetchone()
+#         next_id = 1
+#         if result and result['max_id'] is not None:
+#             next_id = result['max_id'] + 1
             
-        cur.execute(
-            "INSERT INTO articles (id, title, source, url, image, date, content) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (next_id, title, source, url, image, date, content)
-        )
-        mysql.connection.commit()
-        cur.close()
-        return jsonify({
-            "success": True, 
-            "message": "Article inserted successfully",
-            "article": {
-                "id": next_id,
-                "title": title,
-                "source": source,
-                "url": url,
-                "image": image,
-                "date": date
-            }
-        })
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+#         cur.execute(
+#             "INSERT INTO articles (id, title, source, url, image, date, content) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+#             (next_id, title, source, url, image, date, content)
+#         )
+#         mysql.connection.commit()
+#         cur.close()
+#         return jsonify({
+#             "success": True, 
+#             "message": "Article inserted successfully",
+#             "article": {
+#                 "id": next_id,
+#                 "title": title,
+#                 "source": source,
+#                 "url": url,
+#                 "image": image,
+#                 "date": date
+#             }
+#         })
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)}), 500
 
 @db_blueprint.route("/run-crawlers", methods=["POST"])
 def run_crawlers_endpoint():
@@ -238,7 +239,6 @@ def run_crawlers_endpoint():
                 inserted_count += 1
                 
             except Exception as article_error:
-                # Log the error but continue with other articles
                 print(f"Error inserting article: {str(article_error)}")
                 continue
         
@@ -253,3 +253,286 @@ def run_crawlers_endpoint():
         
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/update-articles", methods=["GET"])
+def update_articles():
+    try:
+        cur = mysql.connection.cursor()
+        
+        # Fetch articles with null embeddings
+        cur.execute("SELECT id, title, content FROM articles WHERE embedding IS NULL")
+        articles = cur.fetchall()
+        
+        if not articles:
+            return jsonify({"success": True, "message": "No articles found with null embeddings", "count": 0})
+        
+        processed_count = 0
+        update_data = []
+        
+        from app.routes import app
+        
+        with app.test_client() as client:
+            # Process each article 
+            for article in articles:
+                article_id = article['id']
+                article_content = {"content": article['content']}
+                
+                cluster_result = None
+                bias_result = None
+                hoax_result = None
+                cleaned_result = None
+                ideology_result = None
+                embedding_result = None
+                
+                response = client.post('/cluster', json=article_content)
+                if response.status_code == 200:
+                    cluster_result = response.json.get("cluster")
+                
+                response = client.post('/bias', json=article_content)
+                if response.status_code == 200:
+                    bias_result = response.json.get("bias")
+                
+                if response.status_code == 200:
+                    hoax_result = response.json.get("hoax")
+                
+                response = client.post('/cleaned', json=article_content)
+                if response.status_code == 200:
+                    cleaned_result = response.json.get("cleaned")
+                    
+                    if cleaned_result:
+                        cleaned_article = {'content': cleaned_result}
+                        response = client.post('/ideology', json=cleaned_article)
+                        if response.status_code == 200:
+                            ideology_result = response.json.get("ideology")
+                
+                response = client.post('/embedding', json=[article])
+                if response.status_code == 200:
+                    embeddings = response.json.get("embedding", [])
+                    if embeddings and len(embeddings) > 0:
+                        embedding_result = json.dumps(embeddings[0])
+                
+                # Store all results 
+                update_data.append({
+                    'id': article_id,
+                    'cluster': cluster_result,
+                    'bias': bias_result,
+                    'hoax': hoax_result,
+                    'cleaned': cleaned_result,
+                    'ideology': ideology_result,
+                    'embedding': embedding_result
+                })
+                
+                processed_count += 1
+        
+        for article_update in update_data:
+            fields_to_update = []
+            values = []
+            
+            # Jika hasilnya bukan None, tambahkan ke fields_to_update dan values
+            for field in ['cluster', 'bias', 'hoax', 'cleaned', 'ideology', 'embedding']:
+                if article_update[field] is not None:
+                    fields_to_update.append(f"{field} = %s")
+                    values.append(article_update[field])
+            
+            if fields_to_update:
+                # Tambahkan id ke values
+                values.append(article_update['id'])
+                
+                # Construct and execute the update query
+                update_query = f"UPDATE articles SET {', '.join(fields_to_update)} WHERE id = %s"
+                cur.execute(update_query, values)
+        
+        mysql.connection.commit()
+        cur.close()
+        
+        return jsonify({
+            "success": True, 
+            "message": f"Successfully processed {processed_count} articles",
+            "total_articles": len(articles)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+@db_blueprint.route("/groupArticles", methods=["GET", "POST"])
+def group_articles():
+    try:
+        cur = mysql.connection.cursor()
+        
+        # Step 1: Select articles with NULL title_index
+        cur.execute("SELECT * FROM articles WHERE title_index IS NULL")
+        articles = cur.fetchall()
+        
+        if not articles:
+            return jsonify({"success": True, "message": "No articles found with NULL title_index", "count": 0})
+        
+        # Format articles for the /separate endpoint
+        articles_data = []
+        for article in articles:
+            # The /separate endpoint needs title, content, and embedding
+            article_data = {
+                'id': article['id'],
+                'title': article['title'],
+                'content': article['content'],
+                'embedding': json.loads(article['embedding']) if article['embedding'] else None
+            }
+
+                    
+            articles_data.append(article_data)
+        
+        # Step 2: Send articles to /separate endpoint
+        from app.routes import app
+        with app.test_client() as client:
+            response = client.post(
+                '/separate',
+                data=json.dumps(articles_data), 
+                content_type='application/json'
+            )
+            
+            if response.status_code != 200:
+                return jsonify({"success": False, "error": f"Error from /separate endpoint: {response.json}"}), 400
+                
+            clusters = response.json.get("separate", [])
+        
+        # Step 3: Get the maximum title_index from the title table
+        cur.execute("SELECT MAX(title_index) as max_index FROM title")
+        result = cur.fetchone()
+        max_index = 0
+        if result and result['max_index'] is not None:
+            max_index = result['max_index']
+        
+        # Step 4: Add max+1 to the title_index returned from /separate
+        offset = max_index + 1
+        new_title_indices = [cluster + offset for cluster in clusters]
+        
+        # Determine unique title_index values to insert into title table
+        unique_title_indices = set(new_title_indices)
+        
+        # Step 5: Update the title_index in the articles table
+        update_query = "UPDATE articles SET title_index = %s WHERE id = %s"
+        # Cnth: (101, {'id': 1}, (102, {'id': 2}))
+        update_data = [(new_index, article['id']) for new_index, article in zip(new_title_indices, articles)]
+        cur.executemany(update_query, update_data)
+        
+        # Step 6: Add new rows to title table
+        if unique_title_indices:
+            insert_query = "INSERT INTO title (title_index) VALUES (%s)"
+            insert_data = [(index,) for index in unique_title_indices]
+            cur.executemany(insert_query, insert_data)
+        
+        mysql.connection.commit()
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "message": f"Successfully grouped {len(articles)} articles into {len(unique_title_indices)} clusters",
+            "articles_count": len(articles),
+            "clusters_count": len(unique_title_indices)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/processArticles", methods=["GET", "POST"])
+def process_articles():
+    try:
+        cur = mysql.connection.cursor()
+        
+        # Step 1: Fetch title records with empty title field
+        cur.execute("SELECT title_index FROM title WHERE title IS NULL OR title = ''")
+        title_records = cur.fetchall()
+        
+        if not title_records:
+            return jsonify({"success": True, "message": "No articles found with empty title", "count": 0})
+        
+        processed_count = 0
+        from app.routes import app
+        
+        with app.test_client() as client:
+            for record in title_records:
+                title_index = record['title_index']
+                
+                # Step 2: Fetch all articles with this title_index
+                cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
+                group_articles = cur.fetchall()
+                
+                if not group_articles:
+                    continue
+                
+                # Format articles for API calls
+                formatted_articles = []
+                for article in group_articles:
+                    formatted_article = {
+                        'title': article['title'],
+                        'content': article['content'],
+                        'embedding': json.loads(article['embedding']) if article['embedding'] else None
+                    }
+                    formatted_articles.append(formatted_article)
+                
+                # Step 3: Call title endpoint
+                response = client.post(
+                    '/title',
+                    data=json.dumps(formatted_articles),
+                    content_type='application/json'
+                )
+                if response.status_code != 200:
+                    continue
+                title = response.json.get('title')
+                
+                # Step 4: Call modeCluster endpoint
+                response = client.post(
+                    '/modeCluster',
+                    data=json.dumps(formatted_articles),
+                    content_type='application/json'
+                )
+                if response.status_code != 200:
+                    continue
+                mode_cluster = response.json.get('modeCluster')
+                
+                # Step 5: Call summary endpoint
+                response = client.post(
+                    '/summary',
+                    data=json.dumps(formatted_articles),
+                    content_type='application/json'
+                )
+                if response.status_code != 200:
+                    continue
+                summary_liberalism = response.json.get('summary_liberalism')
+                summary_conservative = response.json.get('summary_conservative')
+                
+                # Step 6: Call analyze endpoint
+                response = client.post(
+                    '/analyze',
+                    data=json.dumps(formatted_articles),
+                    content_type='application/json'
+                )
+                if response.status_code != 200:
+                    continue
+                analysis = response.json.get('analyze')
+                
+                # Step 7: Update the title table
+                update_query = """
+                UPDATE title 
+                SET title = %s, cluster = %s, summary_liberalism = %s, 
+                    summary_conservative = %s, analysis = %s, date = NOW()
+                WHERE title_index = %s
+                """
+                cur.execute(
+                    update_query, 
+                    (title, mode_cluster, summary_liberalism, summary_conservative, analysis, title_index)
+                )
+                mysql.connection.commit()
+                processed_count += 1
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "message": f"Successfully processed {processed_count} article groups",
+            "total_groups": len(title_records),
+            "processed_groups": processed_count
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+

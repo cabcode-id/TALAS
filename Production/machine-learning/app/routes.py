@@ -58,10 +58,10 @@ def predict_cluster():
         kmeans = loadClusterModel()
         cluster = kmeans.predict(embedding)[0]
 
-        return jsonify({"cluster": int(cluster)})
+        return jsonify({"cluster": int(cluster)}), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 400
 
 @app.route('/bias', methods=['POST'])
 def biasAPI():
@@ -74,10 +74,10 @@ def biasAPI():
         
         bias = predictBias(content)
 
-        return jsonify({"bias": bias})
+        return jsonify({"bias": bias}), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 400
 
 @app.route('/hoax', methods=['POST'])
 def hoaxAPI():
@@ -90,10 +90,10 @@ def hoaxAPI():
         
         bias = predictHoax(content)
 
-        return jsonify({"hoax": bias})
+        return jsonify({"hoax": bias}), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 400
     
 @app.route('/ideology', methods=['POST'])
 def ideologyAPI():
@@ -104,12 +104,12 @@ def ideologyAPI():
 
         content = input_data['content']
         
-        bias = predictIdeology(content)
+        ideology = predictIdeology(content)
 
-        return jsonify({"ideology": bias})
+        return jsonify({"ideology": ideology}), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 400
     
 @app.route('/embedding', methods=['POST'])
 def get_embedding():
@@ -259,13 +259,13 @@ def cleaned():
 
             df = pd.DataFrame({'content': content})
             df['cleaned'] = df['content'].swifter.apply(preprocessText)
-            return jsonify({"cleaned": df['cleaned'].tolist()})
+            return jsonify({"cleaned": df['cleaned'].tolist()}), 200
 
         else:  # Invalid type
             return jsonify({"error": "'content' must be either a string or a list of strings"}), 400
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 400
     
 @app.route('/separate', methods=['POST'])
 def separate():
