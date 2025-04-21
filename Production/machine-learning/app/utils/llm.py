@@ -58,6 +58,7 @@ def create_summary(documents):
 
     which are all detected using machine learning models are also included.
     
+    Include both ideologies to the summary.
     Do NOT discuss about the article's hoax, bias, or political view. 
     Do NOT rely on previous knowledge.
     Use Indonesian language. 
@@ -74,8 +75,8 @@ def create_analysis(query_engine, cuan_result):
     Your task is to analyze a given query and generate a response summarizing how articles from each perspective address the topic. 
     
     Ensure the response follows this structure:
-    Liberal: [Summarize key points using the language and tone of liberal articles. If no liberal perspective exists, return "there are no liberal perspectives."]
-    Conservative: [Summarize key points using the language and tone of conservative articles. If no conservative perspective exists, return "there are no conservative perspectives."]
+    Liberal: [Summarize key points using the language and tone of liberal articles (ideology value closer to 1). If no liberal perspective exists, return "there are no liberal perspectives."]
+    Conservative: [Summarize key points using the language and tone of conservative articles (ideology value closer to 0). If no conservative perspective exists, return "there are no conservative perspectives."]
     
     Follow these guidelines:
     Derive all information directly from the provided articles—do not rely on prior knowledge or external context.
@@ -113,15 +114,10 @@ def create_analysis(query_engine, cuan_result):
     return response.response + cuanResponse  # Avoid accessing response2 if it's not set
 
 def summarize_article(documents):
-    ### different summary from each ideology
-    document_liberalism = [doc for doc in documents if doc.metadata['ideology'] == 'liberalism']
-    document_conservative = [doc for doc in documents if doc.metadata['ideology'] == 'conservative']
+    all_docs = [document for document in documents]
+    all_summary = create_summary(all_docs)
 
-
-    summary_liberalism = create_summary(document_liberalism)
-    summary_conservative = create_summary(document_conservative)
-
-    return summary_liberalism, summary_conservative
+    return all_summary
     
 def analyze_article(documents, cuan_result=None):
     query_engine = VectorStoreIndex.from_documents(documents).as_query_engine(llm=Settings.llm)

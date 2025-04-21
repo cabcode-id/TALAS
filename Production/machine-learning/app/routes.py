@@ -203,11 +203,11 @@ def summary():
         df = completeDf(df) # incase any empty ones
 
         documents = create_documents(df)
-        summary_liberalism, summary_conservative = summarize_article(documents)
+        all_summary = summarize_article(documents)
 
         response = {
-            'summary_liberalism': summary_liberalism,
-            'summary_conservative': summary_conservative,
+            'all_summary': all_summary,
+            # 'summary_conservative': summary_conservative,
         }
         return jsonify(response), 200
 
@@ -395,13 +395,13 @@ def processAll():
             else:
                 cuan_result = None
 
-            summary_liberalism, summary_conservative = summarize_article(cluster_documents)
+            all_summary = summarize_article(cluster_documents)
             analysis = analyze_article(cluster_documents, cuan_result)
 
             # Append the results for the current cluster
             cluster_result = {
-                'summary_liberalism': summary_liberalism,
-                'summary_conservative': summary_conservative,
+                'all_summary': all_summary,
+                # 'summary_conservative': summary_conservative,
                 'analyze': analysis,
                 'modeCluster': modeCluster,
                 'title': title

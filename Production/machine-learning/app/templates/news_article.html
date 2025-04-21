@@ -15,12 +15,12 @@
   "Transportasi", 4: "Bisnis", 5: "Agama", 6: "Finance", 7: "Politik"} %}
 
   <p><b>Category: {{ categories.get(news.cluster, "Unknown") }} </b></p>
-  <p class="liberal"><b><u>Rangkuman Liberal</u></b> 
-    {{news.summary_liberalism}}
+  <p class="liberal"><b><u>Rangkuman</u></b> 
+    {{news.all_summary}}
   </p>
-  <p class="conservative"><b><u>Rangkuman Konservatif</u></b> 
+  <!-- <p class="conservative"><b><u>Rangkuman Konservatif</u></b> 
     {{news.summary_conservative}}
-  </p>
+  </p> -->
   <p class="analysis"><b><u>Analisis</u></b> 
     {{news.parsed_analysis}}
   </p>
