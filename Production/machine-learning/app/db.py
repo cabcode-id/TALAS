@@ -292,6 +292,7 @@ def update_articles():
                 if response.status_code == 200:
                     bias_result = response.json.get("bias")
                 
+                response = client.post('/hoax', json=article_content)
                 if response.status_code == 200:
                     hoax_result = response.json.get("hoax")
                 
@@ -323,6 +324,7 @@ def update_articles():
                 })
                 
                 processed_count += 1
+                print("Processed article ID:", article_id)
         
         for article_update in update_data:
             fields_to_update = []
@@ -465,7 +467,10 @@ def process_articles():
                     formatted_article = {
                         'title': article['title'],
                         'content': article['content'],
-                        'embedding': json.loads(article['embedding']) if article['embedding'] else None
+                        'embedding': json.loads(article['embedding']) if article['embedding'] else None,
+                        'bias': article['bias'],
+                        'hoax': article['hoax'],
+                        'ideology': article['ideology'],
                     }
                     formatted_articles.append(formatted_article)
                 

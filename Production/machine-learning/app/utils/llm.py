@@ -47,7 +47,7 @@ def create_summary(documents):
     
     summarizeQuery = """
     Create a short, detailed, and factual summary of the articles.
-    For more context for you, chatgpt, information regarding: 
+    information regarding: 
     it's bias (0: not biased/neutral, 1: biased), 
     hoax (0: is factual, 1: has hoax), 
     and whether it's ideology (liberal or conservative)
@@ -68,8 +68,8 @@ def create_analysis(query_engine, cuan_result):
     Your task is to analyze a given query and generate a response summarizing how articles from each perspective address the topic. 
     
     Ensure the response follows this structure:
-    Liberal: [Summarize key points using the language and tone of liberal articles. If no liberal perspective exists, only explain that there are no liberal perspectives.]
-    Conservative: [Summarize key points using the language and tone of conservative articles. If no conservative perspective exists, only explain that there are no conservative perspectives.]
+    Liberal: [Summarize key points using the language and tone of liberal articles. If no liberal perspective exists, return "there are no liberal perspectives."]
+    Conservative: [Summarize key points using the language and tone of conservative articles. If no conservative perspective exists, return "there are no conservative perspectives."]
     
     Follow these guidelines:
     Derive all information directly from the provided articles—do not rely on prior knowledge or external context.

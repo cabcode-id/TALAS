@@ -86,26 +86,25 @@ def test_run_crawlers():
             )
             return response.json
 
+# Test the /update-articles endpoint
+def test_update_articles():
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.get('/update-articles')
+            return response.json
+
 # Test the /groupArticles endpoint
 def test_group_articles():
     with app.app_context():
         with app.test_client() as client:
-            response = client.post(
-                '/groupArticles',
-                data=json.dumps({}), 
-                content_type='application/json'
-            )
+            response = client.get('/groupArticles')
             return response.json
 
 # Test the /processArticles endpoint
 def test_process_articles():
     with app.app_context():
         with app.test_client() as client:
-            response = client.post(
-                '/processArticles',
-                data=json.dumps({}), 
-                content_type='application/json'
-            )
+            response = client.get('/processArticles')
             return response.json
 
 # =============================================================================================
@@ -342,14 +341,18 @@ db_config = {
 # print(test_endpoint('cleaned', test_data))
 
 # Test the run-crawlers endpoint
-print("Testing run-crawlers endpoint:")
-print(test_run_crawlers())
+# print("Testing run-crawlers endpoint:")
+# print(test_run_crawlers())
 
-# Test the groupArticles endpoint
-print("Testing groupArticles endpoint:")
-print(test_group_articles())
+# Test article-update
+# print("Testing article-update endpoint:")
+# print(test_update_articles())
 
-# Test the processArticles endpoint
+# Test groupArticles endpoint
+# print("Testing groupArticles endpoint:")
+# print(test_group_articles())
+
+# Test processArticles endpoint
 print("Testing processArticles endpoint:")
 print(test_process_articles())
 
