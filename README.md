@@ -538,3 +538,72 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       }
   }
   ```
+
+---
+
+### 9. **Run Web Crawlers**
+- **URL**: `/run-crawlers`
+- **Method**: POST
+- **Description**: Runs web crawlers to collect news articles from various sources and stores them in the database.
+- **Request**:
+  ```json
+  {
+      "optional_parameters": "value" // Optional parameters for crawler configuration
+  }
+  ```
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "message": "Crawlers executed and data inserted successfully",
+      "total_results": 25,
+      "inserted_count": 22
+  }
+  ```
+
+---
+
+### 10. **Update Articles**
+- **URL**: `/update-articles`
+- **Method**: GET
+- **Description**: Processes articles with null embeddings by generating embeddings, cluster assignments, bias, hoax, and ideology classifications.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "message": "Successfully processed 15 articles",
+      "total_articles": 15
+  }
+  ```
+
+---
+
+### 11. **Group Articles**
+- **URL**: `/group-articles`
+- **Method**: GET, POST
+- **Description**: Groups articles with NULL title_index by using the /separate endpoint to identify similar articles.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "message": "Successfully grouped 30 articles into 8 clusters",
+      "articles_count": 30,
+      "clusters_count": 8
+  }
+  ```
+
+---
+
+### 12. **Process Articles**
+- **URL**: `/process-articles`
+- **Method**: GET, POST
+- **Description**: Processes article groups by generating titles, summaries, analysis, and setting images for each group in the title table.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "message": "Successfully processed 8 article groups",
+      "total_groups": 10,
+      "processed_groups": 8
+  }
+  ```

@@ -515,16 +515,23 @@ def process_articles():
                     continue
                 analysis = response.json.get('analyze')
                 
-                # Step 7: Update the title table
+                # Step 7: Get the first image link from the articles
+                image_link = None
+                for article in group_articles:
+                    if article['image'] and article['image'].strip():
+                        image_link = article['image'].strip()
+                        break
+                
+                # Step 8: Update the title table
                 update_query = """
                 UPDATE title 
                 SET title = %s, cluster = %s, summary_liberalism = %s, 
-                    summary_conservative = %s, analysis = %s, date = NOW()
+                    summary_conservative = %s, analysis = %s, date = NOW(), image = %s
                 WHERE title_index = %s
                 """
                 cur.execute(
                     update_query, 
-                    (title, mode_cluster, summary_liberalism, summary_conservative, analysis, title_index)
+                    (title, mode_cluster, summary_liberalism, summary_conservative, analysis, image_link, title_index)
                 )
                 mysql.connection.commit()
                 processed_count += 1
