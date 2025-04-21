@@ -39,9 +39,9 @@ CREATE TABLE `articles` (
   `cleaned` text DEFAULT NULL,
   `title_index` int(255) DEFAULT NULL,
   `cluster` int(10) DEFAULT NULL,
-  `bias` int(10) DEFAULT NULL,
+  `bias` float DEFAULT NULL,
   `hoax` float DEFAULT NULL,
-  `ideology` int(10) DEFAULT NULL
+  `ideology` float DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -287,6 +287,7 @@ CREATE TABLE `title` (
   `cluster` int(100) DEFAULT NULL,
   `summary_liberalism` text DEFAULT NULL,
   `summary_conservative` text DEFAULT NULL,
+  `all_summary` text DEFAULT NULL,
   `analysis` text DEFAULT NULL,
   `image` text DEFAULT NULL,
   `date` date DEFAULT NULL,

@@ -101,7 +101,7 @@ def predictWithModel(newsText, tokenizer, interpreter, maxLen):
 
 def predictBias(newsText):    
     predictions = predictWithModel(newsText, bias_tokenizer, bias_interpreter, 30)
-    return [1 if pred > 0.5 else 0 for pred in predictions][0]
+    return float(predictions[0])
 
 def predictHoax(newsText):
     predictions = predictWithModel(newsText, hoax_tokenizer, hoax_interpreter, 100)
@@ -109,7 +109,7 @@ def predictHoax(newsText):
 
 def predictIdeology(newsText):
     predictions =  predictWithModel(newsText, ideology_tokenizer, ideology_interpreter, 100)
-    return [1 if pred > 0.75 else 0 for pred in predictions][0]
+    return float(predictions[0])
 
 def dfEmbedding(df):
     df['embedding'] = df.apply(

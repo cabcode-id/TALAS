@@ -217,7 +217,7 @@ def updateTitleTableandTitle_Index(db_config, clusters):
         if 'mydb' in locals() and mydb:
             mydb.close()
 
-def group-articlesByTitleIndex(articles):
+def grouparticlesByTitleIndex(articles):
     grouped = {}
     for article in articles:
         index = article['title_index']
@@ -227,7 +227,7 @@ def group-articlesByTitleIndex(articles):
     return grouped
 
 def ProcessArticle(articles):
-    grouped_articles = group-articlesByTitleIndex(articles) # Kelompokkan artikel berdasarkan title_index
+    grouped_articles = grouparticlesByTitleIndex(articles) # Kelompokkan artikel berdasarkan title_index
 
     for title_index, group in grouped_articles.items():
         title = test_endpoint('title', group)
@@ -341,16 +341,16 @@ db_config = {
 # print(test_endpoint('cleaned', test_data))
 
 # Test the run-crawlers endpoint
-# print("Testing run-crawlers endpoint:")
-# print(test_run_crawlers())
+print("Testing run-crawlers endpoint:")
+print(test_run_crawlers())
 
 # Test article-update
-# print("Testing article-update endpoint:")
-# print(test_update_articles())
+print("Testing article-update endpoint:")
+print(test_update_articles())
 
 # Test group-articles endpoint
-# print("Testing group-articles endpoint:")
-# print(test_group_articles())
+print("Testing group-articles endpoint:")
+print(test_group_articles())
 
 # Test process-articles endpoint
 print("Testing process-articles endpoint:")

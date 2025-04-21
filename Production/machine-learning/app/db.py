@@ -113,8 +113,7 @@ def insert_news_page():
 #         cluster = request.form.get('cluster', '')
 #         image = request.form.get('image', '')
 #         date = request.form.get('date', '')
-#         summary_liberalism = request.form.get('summary_liberalism', '')
-#         summary_conservative = request.form.get('summary_conservative', '')
+#         all_summary = request.form.get('all_summary', '')
 #         analysis = request.form.get('analysis', '')
         
 #         if not title:
@@ -125,9 +124,9 @@ def insert_news_page():
 #         # Insert record with title_index as NULL (it will be auto-generated if it's an auto-increment field)
 #         cur.execute(
 #             """INSERT INTO title 
-#                (title, cluster, image, date, summary_liberalism, summary_conservative, analysis) 
+#                (title, cluster, image, date, all_summary, analysis) 
 #                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-#             (title, cluster, image, date, summary_liberalism, summary_conservative, analysis)
+#             (title, cluster, image, date, all_summary, analysis)
 #         )
 #         mysql.connection.commit()
         
@@ -504,8 +503,7 @@ def process_articles():
                 )
                 if response.status_code != 200:
                     continue
-                summary_liberalism = response.json.get('summary_liberalism')
-                summary_conservative = response.json.get('summary_conservative')
+                all_summary = response.json.get('all_summary')
                 
                 # Step 6: Call analyze endpoint
                 response = client.post(
@@ -527,13 +525,13 @@ def process_articles():
                 # Step 8: Update the title table
                 update_query = """
                 UPDATE title 
-                SET title = %s, cluster = %s, summary_liberalism = %s, 
-                    summary_conservative = %s, analysis = %s, date = NOW(), image = %s
+                SET title = %s, cluster = %s, 
+                    all_summary = %s, analysis = %s, date = NOW(), image = %s
                 WHERE title_index = %s
                 """
                 cur.execute(
                     update_query, 
-                    (title, mode_cluster, summary_liberalism, summary_conservative, analysis, image_link, title_index)
+                    (title, mode_cluster, all_summary, analysis, image_link, title_index)
                 )
                 mysql.connection.commit()
                 processed_count += 1

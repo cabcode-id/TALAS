@@ -33,11 +33,10 @@
       <p>Date: {{ article.date }}</p>
       {% if article.url %}
       <p class="article-link"><a href="{{ article.url }}" target="_blank"><u>Article Link</u></a></p>
-      {% endif %} {% set bias = {0: "Not Biased", 1: "Biased"} %}
-      <p class="bias"> Bias Classification: {{bias.get(article.bias, "Unknown")}} </p>
+      {% endif %}
+      <p class="bias"> Bias Rate: {{article.bias}} </p>
       <p class="hoax">Hoax Rate: {{article.hoax}}</p>
-      {% set ideology = {1: "Liberal", 0: "Conservative"} %}
-      <p class="ideology">Ideology: {{ideology.get(article.ideology)}}</p>
+      <p class="ideology">Ideology Rate: {{article.ideology}}</p>
     </div>
     {% endfor %} {% else %}
     <p>No related articles found.</p>
