@@ -93,18 +93,18 @@ def test_update_articles():
             response = client.get('/update-articles')
             return response.json
 
-# Test the /groupArticles endpoint
+# Test the /group-articles endpoint
 def test_group_articles():
     with app.app_context():
         with app.test_client() as client:
-            response = client.get('/groupArticles')
+            response = client.get('/group-articles')
             return response.json
 
-# Test the /processArticles endpoint
+# Test the /process-articles endpoint
 def test_process_articles():
     with app.app_context():
         with app.test_client() as client:
-            response = client.get('/processArticles')
+            response = client.get('/process-articles')
             return response.json
 
 # =============================================================================================
@@ -217,7 +217,7 @@ def updateTitleTableandTitle_Index(db_config, clusters):
         if 'mydb' in locals() and mydb:
             mydb.close()
 
-def groupArticlesByTitleIndex(articles):
+def group-articlesByTitleIndex(articles):
     grouped = {}
     for article in articles:
         index = article['title_index']
@@ -227,7 +227,7 @@ def groupArticlesByTitleIndex(articles):
     return grouped
 
 def ProcessArticle(articles):
-    grouped_articles = groupArticlesByTitleIndex(articles) # Kelompokkan artikel berdasarkan title_index
+    grouped_articles = group-articlesByTitleIndex(articles) # Kelompokkan artikel berdasarkan title_index
 
     for title_index, group in grouped_articles.items():
         title = test_endpoint('title', group)
@@ -348,12 +348,12 @@ db_config = {
 # print("Testing article-update endpoint:")
 # print(test_update_articles())
 
-# Test groupArticles endpoint
-# print("Testing groupArticles endpoint:")
+# Test group-articles endpoint
+# print("Testing group-articles endpoint:")
 # print(test_group_articles())
 
-# Test processArticles endpoint
-print("Testing processArticles endpoint:")
+# Test process-articles endpoint
+print("Testing process-articles endpoint:")
 print(test_process_articles())
 
 # print(test_endpoint('title', test_data)) 

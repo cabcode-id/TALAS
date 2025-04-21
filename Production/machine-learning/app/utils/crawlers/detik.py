@@ -70,14 +70,24 @@ def extract_content(url):
 
         # Cari div yang berisi konten artikel
         content_div = soup.find('div', class_='detail__body-text')
+        
+        # Extract image URL
+        image_url = ""
+        figure = soup.find('figure', class_='detail__media-image')
+        if figure:
+            img_tag = figure.find('img')
+            if img_tag and 'src' in img_tag.attrs:
+                image_url = img_tag['src']
+        
+        # Extract text content
         if content_div:
             paragraphs = content_div.find_all('p')
             paragraph_text = ' '.join(p.get_text(strip=True) for p in paragraphs)  # Join text without newlines
-            return paragraph_text
-        return "" 
+            return paragraph_text, image_url
+        return "", image_url 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching content from {url}: {e}")
-        return ""
+        return "", ""
 
 def crawl_detik():
     url = generate_url()
@@ -95,24 +105,19 @@ def crawl_detik():
     
     processed_data = []
     for link, title in articles.items():
-        raw_content = extract_content(link)
+        content, image_url = extract_content(link)
         date = current_date()
-        processed_data.append([title, link, date, raw_content])
+        processed_data.append({
+            'title': title,
+            'source': "Detik",
+            'url': link,
+            'image': image_url,
+            'date': date,
+            'content': content
+        })
         time.sleep(2)
     
-    # Format data for return
-    formatted_data = []
-    for row in processed_data:
-        formatted_data.append({
-            'title': row[0],
-            'source': "Detik",
-            'url': row[1],
-            'image': "",
-            'date': row[2],
-            'content': row[3]
-        })
-    
-    return formatted_data
+    return processed_data
 
 def main():
     return crawl_detik()

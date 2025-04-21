@@ -45,8 +45,15 @@ def scrape_tempo_articles(tempo_links):
             # Process content directly instead of writing to raw file first
             processed_content = extract_content(content)
             
-            # Empty string for image
+            # Extract image URL
             image = ""
+            # Find the first image with "statik.tempo.co" in the URL
+            img_tags = detail_in.find_all('img')
+            for img in img_tags:
+                src = img.get('src', '')
+                if "statik.tempo.co" in src:
+                    image = src
+                    break
             
             data.append({
                 'title': title_news,

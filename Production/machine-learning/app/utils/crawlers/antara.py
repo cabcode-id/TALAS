@@ -44,11 +44,10 @@ def collect_articles(links_dict):
             get_content = requests.get(link, timeout=10)
             get_content.raise_for_status()
             date = raw_date
-            content = find_content(link)
+            content, image_url = find_content(link)
             # Process content directly
             processed_content = extract_content(content)
-            image = ""
-            data.append([title, source, link, image, date, processed_content])
+            data.append([title, source, link, image_url, date, processed_content])
         except requests.exceptions.RequestException as e:
             print(f"Error fetching content for {link}: {e}")
         time.sleep(2)
@@ -58,7 +57,15 @@ def collect_articles(links_dict):
 def find_content(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
-
+    
+    # Extract image URL
+    image_url = ""
+    image_div = soup.find('div', class_='wrap__article-detail-image')
+    if image_div:
+        img_tag = image_div.find('img', class_='img-fluid')
+        if img_tag and img_tag.has_attr('src'):
+            image_url = img_tag['src']
+    
     parent_p_count = {}
     # Mencari semua parent yang memiliki p. Jumlah p yang tertinggi = main content yang ingin diambil.
     for p in soup.find_all('p'):
@@ -73,6 +80,7 @@ def find_content(url):
         if parent:
             parent_p_count[parent] = parent_p_count.get(parent, 0) + 1
 
+    content_text = ""
     if parent_p_count:
         max_parent = max(parent_p_count, key=parent_p_count.get)
         paragraphs = []
@@ -83,8 +91,9 @@ def find_content(url):
                 continue
             text = p.get_text(" ", strip=True)
             paragraphs.append(text)
-        return " ".join(paragraphs)
-    return ""
+        content_text = " ".join(paragraphs)
+    
+    return content_text, image_url
 
 def extract_content(text):
     text = text.lower()

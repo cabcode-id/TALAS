@@ -30,6 +30,12 @@ def parse_article(article_url):
     try:
         soup = get_soup(article_url)
         
+        # Extract image URL from figure class="entry-thumbnail"
+        image_url = ""
+        figure = soup.find('figure', class_='entry-thumbnail')
+        if figure and figure.find('img'):
+            image_url = figure.find('img').get('src', '')
+        
         content_div = soup.find(class_="entry-content mh-clearfix")
         if content_div:
             # Ambil semua teks dari paragraf, item daftar, blockquote
@@ -41,12 +47,14 @@ def parse_article(article_url):
             content = "No content found"
             
         return {
-            "content": content
+            "content": content,
+            "image": image_url
         }
     except Exception as e:
         print(f"Error parsing article {article_url}: {e}")
         return {
-            "content": f"Failed to parse: {str(e)}"
+            "content": f"Failed to parse: {str(e)}",
+            "image": ""
         }
 
 def get_todays_news_links(url):
@@ -105,7 +113,7 @@ def crawl_turnbackhoax():
             "title": article['title'],
             "source": source,
             "url": article['link'],
-            "image": "",
+            "image": details["image"],
             "date": today_date, 
             "content": details["content"]
         })

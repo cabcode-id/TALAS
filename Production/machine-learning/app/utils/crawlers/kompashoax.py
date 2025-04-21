@@ -65,11 +65,18 @@ def get_data():
 
         content_response = requests.get(link)
         content_soup = BeautifulSoup(content_response.text, 'html.parser')
+        
+        # Extract image URL
+        image_url = ''
+        photo_wrap = content_soup.find('div', class_='photo__wrap')
+        if photo_wrap and photo_wrap.find('img'):
+            image_url = photo_wrap.find('img').get('src', '')
+        
         content_paragraphs = content_soup.find('div', class_='read__content').find_all('p')
         content = ' '.join(p.get_text(strip=True) for p in content_paragraphs)
         processed_content = extract_content(content)
 
-        data.append([title, link, formatted_date, processed_content])
+        data.append([title, link, formatted_date, processed_content, image_url])
     return data
 
 def crawl_kompas_hoax():
@@ -82,7 +89,7 @@ def crawl_kompas_hoax():
             'title': row[0],
             'source': 'Kompas',
             'url': row[1],
-            'image': '',
+            'image': row[4],
             'date': row[2],
             'content': row[3]
         })

@@ -13,6 +13,14 @@ def extract_article_content(url):
         
         soup = BeautifulSoup(response.content, 'html.parser')
         
+        # Url gmbr
+        image_url = ""
+        photo_wrap = soup.select_one('.photo__wrap')
+        if photo_wrap:
+            img_tag = photo_wrap.find('img')
+            if img_tag and 'src' in img_tag.attrs:
+                image_url = img_tag['src']
+        
         # Cari element dengan tag p terbanyak
         p_tag_counts = {}
         for elem in soup.find_all():
@@ -21,8 +29,7 @@ def extract_article_content(url):
                 p_tag_counts[elem] = len(p_tags)
         
         if not p_tag_counts:
-            print(f"No <p> tags found in {url}")
-            return ""
+            return "", image_url
         
         content_elem = max(p_tag_counts.items(), key=lambda x: x[1])[0]
         
@@ -36,11 +43,11 @@ def extract_article_content(url):
             if text:
                 content_parts.append(text)
         
-        return ' '.join(content_parts)
+        return ' '.join(content_parts), image_url
         
     except Exception as e:
         print(f"Error extracting content from {url}: {e}")
-        return ""
+        return "", ""
 
 def crawl_kompas_news():
     today = datetime.now()
@@ -50,9 +57,8 @@ def crawl_kompas_news():
     articles_data = []  #  store dictionaries of article data
     all_articles = []  #  store tuples of (link, title)
     
-    # First, get the total number of pages
+    # Total halaman yang ada
     url = f"https://indeks.kompas.com/?site=news&date={date_for_url}&page=1"
-    print(f"Getting pagination info from: {url}")
     
     try:
         headers = {
@@ -66,13 +72,7 @@ def crawl_kompas_news():
         # Cari nomor halaman maksimal ada berapa
         pagination_div = soup.select_one('.paging__wrap')
         if pagination_div:
-            print(f"Found pagination container: {pagination_div.name} with class {pagination_div.get('class')}")
             page_links = pagination_div.select('.paging__link')
-            print(f"Found {len(page_links)} pagination links")
-            for link in page_links:
-                print(f"Page link: {link.get('href')} - Text: {link.text}")
-        else:
-            print("No pagination container found")
         
         last_page_link = soup.select_one('.paging__link--last')
         
@@ -88,7 +88,6 @@ def crawl_kompas_news():
                         continue
                 if page_numbers:
                     last_page = max(page_numbers)
-                    print(f"Determined last page from link text: {last_page}")
                 else:
                     last_page = 1
             else:
@@ -96,16 +95,12 @@ def crawl_kompas_news():
         else:
             if 'page=' in last_page_link.get('href', ''):
                 last_page = int(last_page_link.get('href').split('page=')[-1])
-                print(f"Found last page link: {last_page_link}")
             else:
                 last_page = 1
-            
-        print(f"Found {last_page} pages to scrape")
-        
+                    
         # iterate through all pages
         for page in range(1, last_page + 1):
             url = f"https://indeks.kompas.com/?site=news&date={date_for_url}&page={page}"
-            print(f"Scraping page {page}/{last_page}: {url}")
             
             response = requests.get(url, headers=headers)
             response.raise_for_status()
@@ -114,27 +109,17 @@ def crawl_kompas_news():
             
             # Find all article cards/containers
             article_containers = soup.select('.articleListItem')
-            if article_containers:
-                print(f"Found {len(article_containers)} articles with .articleListItem selector")
             
             if not article_containers:
                 # Try an alternative selector if the first one doesn't work
                 article_containers = soup.select('.article__asset')
-                if article_containers:
-                    print(f"Found {len(article_containers)} articles with .article__asset selector")
             
             if not article_containers:
                 # Try another possible class
                 article_containers = soup.select('.latest--indeks')
-                if article_containers:
-                    print(f"Found {len(article_containers)} articles with .latest--indeks selector")
             
             if not article_containers:
-                print(f"No article containers found on page {page}. Trying to find any links...")
-                # As a fallback, look for any links with article titles
                 article_containers = soup.select('a[href*="kompas.com/read/"]')
-                if article_containers:
-                    print(f"Found {len(article_containers)} articles with direct link selector")
             
             page_articles = []
             
@@ -158,7 +143,6 @@ def crawl_kompas_news():
                 if article_link and article_title:
                     page_articles.append((article_link, article_title))
             
-            print(f"Successfully extracted {len(page_articles)} articles on page {page}")
             all_articles.extend(page_articles)
             
             # Add a delay between page requests
@@ -169,19 +153,17 @@ def crawl_kompas_news():
         import traceback
         traceback.print_exc()
     
-    print(f"Total articles found across all pages: {len(all_articles)}")
     
     # Extract content from each article
-    print("\nExtracting content from each article...")
     for i, (link, title) in enumerate(all_articles, 1):
-        print(f"Processing article {i}/{len(all_articles)}: {title}")
-        content = extract_article_content(link)
+        content, image_url = extract_article_content(link)
         
         articles_data.append({
             'title': title,
             'link': link,
             'date': date_for_comparison,
-            'content': content
+            'content': content,
+            'image': image_url
         })
         
         # Add a small delay to avoid overloading the server
@@ -195,7 +177,7 @@ def crawl_kompas_news():
             'title': article['title'],
             'source': 'Kompas',
             'url': article['link'],
-            'image': '',
+            'image': article['image'],
             'date': article['date'],
             'content': article['content']
         })

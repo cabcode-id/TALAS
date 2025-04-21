@@ -356,7 +356,7 @@ def update_articles():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
-@db_blueprint.route("/groupArticles", methods=["GET", "POST"])
+@db_blueprint.route("/group-articles", methods=["GET", "POST"])
 def group_articles():
     try:
         cur = mysql.connection.cursor()
@@ -435,7 +435,7 @@ def group_articles():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@db_blueprint.route("/processArticles", methods=["GET", "POST"])
+@db_blueprint.route("/process-articles", methods=["GET", "POST"])
 def process_articles():
     try:
         cur = mysql.connection.cursor()
