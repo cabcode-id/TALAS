@@ -224,9 +224,11 @@ def run_crawlers_endpoint():
                 # Get the next ID for this article
                 cur.execute("SELECT MAX(id) as max_id FROM articles")
                 result = cur.fetchone()
-                next_id = 1
+                next_id = 0  
                 if result and result['max_id'] is not None:
                     next_id = result['max_id'] + 1
+                else:
+                    next_id = 1  # First record starts at 1
                 
                 # Then insert into articles table with auto-incremented ID
                 cur.execute(
@@ -399,7 +401,7 @@ def group_articles():
         # Step 3: Get the maximum title_index from the title table
         cur.execute("SELECT MAX(title_index) as max_index FROM title")
         result = cur.fetchone()
-        max_index = 0
+        max_index = 0  # Default to 0 if no records exist
         if result and result['max_index'] is not None:
             max_index = result['max_index']
         
