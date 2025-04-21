@@ -36,7 +36,7 @@
       {% endif %} {% set bias = {0: "Not Biased", 1: "Biased"} %}
       <p class="bias"> Bias Classification: {{bias.get(article.bias, "Unknown")}} </p>
       <p class="hoax">Hoax Rate: {{article.hoax}}</p>
-      {% set ideology = {0: "Liberal", 1: "Conservative"} %}
+      {% set ideology = {1: "Liberal", 0: "Conservative"} %}
       <p class="ideology">Ideology: {{ideology.get(article.ideology)}}</p>
     </div>
     {% endfor %} {% else %}
