@@ -548,3 +548,128 @@ def process_articles():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@db_blueprint.route("/count-side", methods=["GET"])
+def count_side():
+    title_index = request.args.get('title_index')
+    
+    if not title_index:
+        return jsonify({"success": False, "error": "No title_index provided"}), 400
+    
+    cur = mysql.connection.cursor()
+    
+    cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
+    articles = cur.fetchall()
+    
+    if not articles:
+        return jsonify({"success": True, "message": "No articles found for this title_index", "count": 0})
+    
+    counts = {
+        "liberal": 0,
+        "conservative": 0,
+        "neutral": 0
+    }
+    
+    for article in articles:
+        ideology = article['ideology']
+        if ideology is not None:
+            try:
+                ideology_val = float(ideology)
+                if ideology_val <= 0.25:
+                    counts["liberal"] += 1
+                elif ideology_val >= 0.75:
+                    counts["conservative"] += 1
+                else:
+                    counts["neutral"] += 1
+            except (ValueError, TypeError):
+                pass
+    
+    cur.close()
+    
+    return jsonify({
+        "success": True,
+        "counts": counts,
+        "total": len(articles)
+    })
+
+@db_blueprint.route("/top-news", methods=["GET"])
+def top_news():
+    try:
+        cur = mysql.connection.cursor()
+        
+        limit = request.args.get('limit', default=5, type=int)
+
+        query = """
+            SELECT a.title_index, t.title, COUNT(*) as article_count 
+            FROM articles a
+            JOIN title t ON a.title_index = t.title_index
+            WHERE t.date = CURDATE()
+            GROUP BY a.title_index
+            ORDER BY article_count DESC
+            LIMIT %s
+        """
+
+        cur.execute(query, (limit,))
+            
+        top_news_groups = cur.fetchall()
+        
+        if not top_news_groups:
+            return jsonify({
+                "success": True, 
+                "message": "No news found for the specified date",
+                "data": []
+            })
+        
+        result = []
+        for news in top_news_groups:
+            title_index = news['title_index']
+            
+            cur.execute("SELECT * FROM title WHERE title_index = %s", (title_index,))
+            title_details = cur.fetchone()
+            
+            if title_details:
+                result.append({
+                    "title_index": title_index,
+                    "title": title_details.get('title'),
+                    "image": title_details.get('image'),
+                    "all_summary": title_details.get('all_summary'),
+                    "article_count": news['article_count']
+                })
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "data": result
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/get-cluster-news", methods=["GET"])
+def get_cluster_news():
+    try:
+        cluster = request.args.get('cluster')
+        
+        if not cluster:
+            return jsonify({"success": False, "error": "No cluster provided"}), 400
+        
+        cur = mysql.connection.cursor()
+        
+        cur.execute("SELECT title_index FROM title WHERE cluster = %s ORDER BY date DESC", (cluster,))
+        title_indices = cur.fetchall()
+        
+        if not title_indices:
+            return jsonify({"success": True, "message": "No news found for this cluster", "count": 0})
+        
+        result = [item['title_index'] for item in title_indices]
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "data": result,
+            "total": len(result)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500

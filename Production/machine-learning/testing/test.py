@@ -107,6 +107,25 @@ def test_process_articles():
             response = client.get('/process-articles')
             return response.json
 
+# Test the /count-side endpoint
+def test_count_side(title_index):
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.get(f'/count-side?title_index={title_index}')
+            return response.json
+
+# Test the /top-news endpoint
+def test_top_news(limit):
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.get(f'/top-news?limit={limit}')
+            return response.json
+
+def test_get_cluster_news(cluster):
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.get(f'/get-cluster-news?cluster={cluster}')
+            return response.json
 # =============================================================================================
 
 def FetchDbToJson(db_config):
@@ -340,21 +359,33 @@ db_config = {
 # print(test_endpoint('ideology', test_data))
 # print(test_endpoint('cleaned', test_data))
 
-# Test the run-crawlers endpoint
-print("Testing run-crawlers endpoint:")
-print(test_run_crawlers())
+# # Test the run-crawlers endpoint
+# print("Testing run-crawlers endpoint:")
+# print(test_run_crawlers())
 
-# Test article-update
-print("Testing article-update endpoint:")
-print(test_update_articles())
+# # Test article-update
+# print("Testing article-update endpoint:")
+# print(test_update_articles())
 
-# Test group-articles endpoint
-print("Testing group-articles endpoint:")
-print(test_group_articles())
+# # Test group-articles endpoint
+# print("Testing group-articles endpoint:")
+# print(test_group_articles())
 
-# Test process-articles endpoint
-print("Testing process-articles endpoint:")
-print(test_process_articles())
+# # Test process-articles endpoint
+# print("Testing process-articles endpoint:")
+# print(test_process_articles())
+
+# # Test count-side endpoint with a sample title_index (replace '1' with an actual title_index if needed)
+# print("Testing count-side endpoint:")
+# print(test_count_side(21))
+
+# # Test top-news endpoint
+# print("Testing top-news endpoint:")
+# print(test_top_news(3))
+
+# Test get-cluster-news endpoint with a sample cluster (replace '1' with an actual cluster if needed)
+print("Testing get-cluster-news endpoint:")
+print(test_get_cluster_news(2))
 
 # print(test_endpoint('title', test_data)) 
 # print(test_endpoint('modeCluster', test_data))

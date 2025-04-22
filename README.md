@@ -607,3 +607,72 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       "processed_groups": 8
   }
   ```
+
+---
+
+### 13. **Count Side**
+- **URL**: `/count-side`
+- **Method**: GET
+- **Description**: Counts the number of articles categorized as liberal, conservative, or neutral for a given title index.
+- **Query Parameters**:
+  - `title_index`: The index of the title to fetch articles for.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "counts": {
+          "liberal": 10,
+          "conservative": 5,
+          "neutral": 3
+      },
+      "total": 18
+  }
+  ```
+
+---
+
+### 14. **Top News**
+- **URL**: `/top-news`
+- **Method**: GET
+- **Description**: Fetches the top news articles based on the number of articles in each group for the previous day.
+- **Query Parameters**:
+  - `limit`: The maximum number of top news groups to fetch (default is 5).
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "title_index": 1,
+              "title": "Top News Title",
+              "image": "image_url",
+              "all_summary": "Summary of the news",
+              "article_count": 10
+          },
+          {
+              "title_index": 2,
+              "title": "Top News Title",
+              "image": "image_url",
+              "all_summary": "Summary of the news",
+              "article_count": 10
+          }
+      ]
+  }
+  ```
+
+---
+
+### 15. **Get Cluster News**
+- **URL**: `/get-cluster-news`
+- **Method**: GET
+- **Description**: Fetches the title indices of news articles belonging to a specific cluster.
+- **Query Parameters**:
+  - `cluster`: The cluster ID to fetch news for.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "data": [1, 2, 3],
+      "total": 3
+  }
+  ```
