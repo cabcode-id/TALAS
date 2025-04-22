@@ -76,7 +76,7 @@ def get_news():
         #     cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s", 
         #               (start_date, end_date))
         # else:
-        cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date = CURDATE()")
+        cur.execute("SELECT title, image, all_summary, date, title_index, cluster FROM title WHERE date = CURDATE()")
             
         news_items = cur.fetchall()
         
@@ -92,6 +92,7 @@ def get_news():
             result.append({
                 'title': item['title'],
                 'image': item['image'],
+                'all_summary': item['all_summary'],
                 'date': item['date'],
                 'title_index': item['title_index'],
                 'cluster': item['cluster'],

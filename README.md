@@ -740,6 +740,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
               "title": "News Article Title",
               "image": "image_url",
               "date": "2025-01-05",
+              "all_summary": "News summary",
               "title_index": 123,
               "cluster": 4,
               "counts": {
