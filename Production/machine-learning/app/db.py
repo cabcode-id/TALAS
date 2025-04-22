@@ -655,13 +655,21 @@ def get_cluster_news():
         
         cur = mysql.connection.cursor()
         
-        cur.execute("SELECT title_index FROM title WHERE cluster = %s ORDER BY date DESC", (cluster,))
-        title_indices = cur.fetchall()
+        cur.execute("SELECT title_index, title, date, all_summary, image FROM title WHERE cluster = %s ORDER BY date DESC", (cluster,))
+        news_items = cur.fetchall()
         
-        if not title_indices:
+        if not news_items:
             return jsonify({"success": True, "message": "No news found for this cluster", "count": 0})
         
-        result = [item['title_index'] for item in title_indices]
+        result = []
+        for item in news_items:
+            result.append({
+                'title_index': item['title_index'],
+                'title': item['title'],
+                'date': item['date'],
+                'all_summary': item['all_summary'],
+                'image': item['image']
+            })
         
         cur.close()
         

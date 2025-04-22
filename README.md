@@ -665,14 +665,29 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ### 15. **Get Cluster News**
 - **URL**: `/get-cluster-news`
 - **Method**: GET
-- **Description**: Fetches the title indices of news articles belonging to a specific cluster.
+- **Description**: Fetches news articles belonging to a specific cluster with detailed information.
 - **Query Parameters**:
   - `cluster`: The cluster ID to fetch news for.
 - **Response**:
   ```json
   {
       "success": true,
-      "data": [1, 2, 3],
-      "total": 3
+      "data": [
+          {
+              "title_index": 1,
+              "title": "Article Title",
+              "date": "2025-01-04",
+              "all_summary": "Summary of the article content",
+              "image": "image_url"
+          },
+          {
+              "title_index": 2,
+              "title": "Another Article Title",
+              "date": "2025-01-04",
+              "all_summary": "Summary of another article content",
+              "image": "another_image_url"
+          }
+      ],
+      "total": 2
   }
   ```
