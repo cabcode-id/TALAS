@@ -403,9 +403,9 @@ db_config = {
 # print("Testing count-side endpoint:")
 # print(test_count_side(21))
 
-# # Test top-news endpoint
+# # # Test top-news endpoint
 # print("Testing top-news endpoint:")
-# print(test_top_news(3))
+# print(test_top_news(1))
 
 # Test get-cluster-news endpoint with a sample cluster (replace '1' with an actual cluster if needed)
 # print("Testing get-cluster-news endpoint:")

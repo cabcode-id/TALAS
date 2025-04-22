@@ -23,6 +23,47 @@ def init_mysql(app):
 
     mysql = MySQL(app)
 
+@db_blueprint.route("/get-clusters", methods=["GET"])
+def get_clusters():
+    clusters = {
+        "0": "Korupsi",
+        "1": "Pemerintahan",
+        "2": "Kejahatan",
+        "3": "Transportasi",
+        "4": "Bisnis",
+        "5": "Agama", 
+        "6": "Finance",
+        "7": "Politik"
+    }
+    
+    return jsonify({
+        "success": True,
+        "clusters": clusters
+    })
+
+def calculate_ideology_counts(articles):
+    counts = {
+        "liberal": 0,
+        "conservative": 0,
+        "neutral": 0
+    }
+    
+    for article in articles:
+        ideology = article['ideology']
+        if ideology is not None:
+            try:
+                ideology_val = float(ideology)
+                if ideology_val <= 0.25:
+                    counts["liberal"] += 1
+                elif ideology_val >= 0.75:
+                    counts["conservative"] += 1
+                else:
+                    counts["neutral"] += 1
+            except (ValueError, TypeError):
+                pass
+    
+    return counts
+
 @db_blueprint.route("/get-news", methods=["GET"])
 def get_news():
     try:
@@ -46,25 +87,7 @@ def get_news():
             cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
             articles = cur.fetchall()
             
-            counts = {
-                "liberal": 0,
-                "conservative": 0,
-                "neutral": 0
-            }
-            
-            for article in articles:
-                ideology = article['ideology']
-                if ideology is not None:
-                    try:
-                        ideology_val = float(ideology)
-                        if ideology_val <= 0.25:
-                            counts["liberal"] += 1
-                        elif ideology_val >= 0.75:
-                            counts["conservative"] += 1
-                        else:
-                            counts["neutral"] += 1
-                    except (ValueError, TypeError):
-                        pass
+            counts = calculate_ideology_counts(articles)
             
             result.append({
                 'title': item['title'],
@@ -131,10 +154,8 @@ def get_news_detail():
 @db_blueprint.route("/run-crawlers", methods=["POST"])
 def run_crawlers_endpoint():
     try:
-        # Get optional parameters from the request
         params = request.json or {}
         
-        # Run all crawlers and get combined results
         results = run_crawlers(**params)
         
         if not results:
@@ -148,7 +169,7 @@ def run_crawlers_endpoint():
             try:
                 # Extract article data with fallbacks to empty values
                 title = article.get('title', '')
-                source = article.get('source', 'Crawler')
+                source = article.get('source', '')
                 url = article.get('url', '')
                 image = article.get('image', '')
                 date = article.get('date', '')
@@ -198,7 +219,6 @@ def update_articles():
     try:
         cur = mysql.connection.cursor()
         
-        # Fetch articles with null embeddings
         cur.execute("SELECT id, title, content FROM articles WHERE embedding IS NULL")
         articles = cur.fetchall()
         
@@ -211,7 +231,6 @@ def update_articles():
         from app.routes import app
         
         with app.test_client() as client:
-            # Process each article 
             for article in articles:
                 article_id = article['id']
                 article_content = {"content": article['content']}
@@ -524,25 +543,7 @@ def count_side():
     if not articles:
         return jsonify({"success": True, "message": "No articles found for this title_index", "count": 0})
     
-    counts = {
-        "liberal": 0,
-        "conservative": 0,
-        "neutral": 0
-    }
-    
-    for article in articles:
-        ideology = article['ideology']
-        if ideology is not None:
-            try:
-                ideology_val = float(ideology)
-                if ideology_val <= 0.25:
-                    counts["liberal"] += 1
-                elif ideology_val >= 0.75:
-                    counts["conservative"] += 1
-                else:
-                    counts["neutral"] += 1
-            except (ValueError, TypeError):
-                pass
+    counts = calculate_ideology_counts(articles)
     
     cur.close()
     
@@ -560,7 +561,7 @@ def top_news():
         limit = request.args.get('limit', default=5, type=int)
 
         query = """
-            SELECT a.title_index, t.title, COUNT(*) as article_count 
+            SELECT a.title_index, COUNT(*) as article_count 
             FROM articles a
             JOIN title t ON a.title_index = t.title_index
             WHERE t.date = CURDATE()
@@ -587,13 +588,18 @@ def top_news():
             cur.execute("SELECT * FROM title WHERE title_index = %s", (title_index,))
             title_details = cur.fetchone()
             
+            cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
+            articles = cur.fetchall()
+            counts = calculate_ideology_counts(articles)
+            
             if title_details:
                 result.append({
                     "title_index": title_index,
                     "title": title_details.get('title'),
                     "image": title_details.get('image'),
                     "all_summary": title_details.get('all_summary'),
-                    "article_count": news['article_count']
+                    "article_count": news['article_count'],
+                    "counts": counts
                 })
         
         cur.close()
@@ -680,122 +686,121 @@ def search_title():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@db_blueprint.route("/get-top-keywords", methods=["GET"]) 
-def get_top_keywords():
-    try:
-        cur = mysql.connection.cursor()
+# @db_blueprint.route("/get-top-keywords", methods=["GET"]) 
+# def get_top_keywords():
+#     try:
+#         cur = mysql.connection.cursor()
         
-        limit = request.args.get('limit', default=5, type=int)
+#         limit = request.args.get('limit', default=5, type=int)
         
-        query = """
-            SELECT keyword
-            FROM title
-            WHERE keyword IS NOT NULL
-            AND keyword != '[]'
-            AND DATE(date) = CURDATE()
-        """
+#         query = """
+#             SELECT keyword
+#             FROM title
+#             WHERE keyword IS NOT NULL
+#             AND keyword != '[]'
+#             AND DATE(date) = CURDATE()
+#         """
     
-        query += " "
-        cur.execute(query)
+#         query += " "
+#         cur.execute(query)
             
-        results = cur.fetchall()
+#         results = cur.fetchall()
         
-        if not results:
-            return jsonify({
-                "success": True,
-                "message": "No keywords found",
-                "data": []
-            })
+#         if not results:
+#             return jsonify({
+#                 "success": True,
+#                 "message": "No keywords found",
+#                 "data": []
+#             })
         
-        all_keywords = []
-        for row in results:
-            if row['keyword']:
-                try:
-                    keywords = json.loads(row['keyword'])
-                    all_keywords.extend(keywords)
-                except json.JSONDecodeError:
-                    continue
+#         all_keywords = []
+#         for row in results:
+#             if row['keyword']:
+#                 try:
+#                     keywords = json.loads(row['keyword'])
+#                     all_keywords.extend(keywords)
+#                 except json.JSONDecodeError:
+#                     continue
         
-        keyword_counts = Counter(all_keywords)
+#         keyword_counts = Counter(all_keywords)
         
-        top_keywords = keyword_counts.most_common(limit)
+#         top_keywords = keyword_counts.most_common(limit)
         
-        cur.close()
+#         cur.close()
         
-        return jsonify({
-            "success": True,
-            "data": top_keywords,
-            "total": len(all_keywords)
-        })
+#         return jsonify({
+#             "success": True,
+#             "data": top_keywords,
+#             "total": len(all_keywords)
+#         })
         
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)}), 500
 
-@db_blueprint.route("/getner", methods=["GET"])
-def getner():
-    try:
-        cur = mysql.connection.cursor()
+# @db_blueprint.route("/getner", methods=["GET"])
+# def getner():
+#     try:
+#         cur = mysql.connection.cursor()
         
-        # Fetch title records with null keyword field but with all_summary
-        cur.execute("SELECT title_index, all_summary FROM title WHERE keyword IS NULL AND all_summary IS NOT NULL AND all_summary != ''")
-        title_records = cur.fetchall()
+#         cur.execute("SELECT title_index, all_summary FROM title WHERE keyword IS NULL AND all_summary IS NOT NULL AND all_summary != ''")
+#         title_records = cur.fetchall()
         
-        if not title_records:
-            return jsonify({"success": True, "message": "No titles found with null keywords", "count": 0})
+#         if not title_records:
+#             return jsonify({"success": True, "message": "No titles found with null keywords", "count": 0})
         
-        processed_count = 0
-        ner_requests = []
+#         processed_count = 0
+#         ner_requests = []
 
-        # Prepare requests for the /ner endpoint
-        for record in title_records:
-            ner_requests.append({
-                "id": record['title_index'],
-                "content": record['all_summary']
-            })
+#         for record in title_records:
+#             ner_requests.append({
+#                 "id": record['title_index'],
+#                 "content": record['all_summary']
+#             })
 
-        if not ner_requests:
-            return jsonify({"success": True, "message": "No content to process", "count": 0})
+#         if not ner_requests:
+#             return jsonify({"success": True, "message": "No content to process", "count": 0})
             
-        from app.routes import app
+#         from app.routes import app
         
-        with app.test_client() as client:
-            ner_response = client.post(
-                '/ner',
-                data=json.dumps(ner_requests),
-                content_type='application/json'
-            )
+#         with app.test_client() as client:
+#             ner_response = client.post(
+#                 '/ner',
+#                 data=json.dumps(ner_requests),
+#                 content_type='application/json'
+#             )
 
-            if ner_response.status_code == 200:
-                ner_results = ner_response.json
-                for request, entities in zip(ner_requests, ner_results):
-                    keywords = []
-                    if entities and isinstance(entities, list):
-                        for entity in entities:
-                            if entity.get('tag', '').startswith(('B-', 'I-')):
-                                keywords.append(entity['word'])
+#             if ner_response.status_code == 200:
+#                 ner_results = ner_response.json
+#                 for request, entities in zip(ner_requests, ner_results):
+#                     keywords = []
+#                     if entities and isinstance(entities, list):
+#                         for entity in entities:
+#                             if entity.get('tag', '').startswith(('B-', 'I-')):
+#                                 keywords.append(entity['word'])
                     
-                    # Only update the database if keywords list is not empty
-                    if keywords:
-                        cur.execute(
-                            "UPDATE title SET keyword = %s WHERE title_index = %s",
-                            (json.dumps(keywords), request['id'])
-                        )
-                        mysql.connection.commit()
-                        processed_count += 1
-            else:
-                return jsonify({"success": False, "error": "NER endpoint returned an error", "status": ner_response.status_code}), 500
+#                     # Only update the database if keywords list is not empty
+#                     if keywords:
+#                         cur.execute(
+#                             "UPDATE title SET keyword = %s WHERE title_index = %s",
+#                             (json.dumps(keywords), request['id'])
+#                         )
+#                         mysql.connection.commit()
+#                         processed_count += 1
+#             else:
+#                 return jsonify({"success": False, "error": "NER endpoint returned an error", "status": ner_response.status_code}), 500
 
-        cur.close()
+#         cur.close()
         
-        return jsonify({
-            "success": True,
-            "message": f"Successfully processed keywords for {processed_count} titles",
-            "total_titles": len(title_records),
-            "processed_titles": processed_count
-        })
+#         return jsonify({
+#             "success": True,
+#             "message": f"Successfully processed keywords for {processed_count} titles",
+#             "total_titles": len(title_records),
+#             "processed_titles": processed_count
+#         })
         
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)}), 500
+
 
 # @db_blueprint.route("/users")
 # def users():

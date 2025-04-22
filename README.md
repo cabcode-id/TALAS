@@ -384,7 +384,30 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 ---
 ## Database Endpoints Production\machine-learning\app\db.py
 
-### 1. **Fetch Users**
+### 1. **Get Clusters**
+- **URL**: `/get-clusters`
+- **Method**: GET
+- **Description**: Returns the mapping of cluster IDs to human-readable category names.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "clusters": {
+          "0": "Korupsi",
+          "1": "Pemerintahan",
+          "2": "Kejahatan",
+          "3": "Transportasi",
+          "4": "Bisnis",
+          "5": "Agama", 
+          "6": "Finance",
+          "7": "Politik"
+      }
+  }
+  ```
+
+---
+
+### 2. **Fetch Users**
 - **URL**: `/users`
 - **Method**: GET
 - **Description**: Fetches a list of MySQL users.
@@ -400,7 +423,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 2. **Fetch News**
+### 3. **Fetch News**
 - **URL**: `/news`
 - **Method**: GET
 - **Description**: Fetches a list of news articles from the database.
@@ -430,7 +453,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 3. **Test Database Connection**
+### 4. **Test Database Connection**
 - **URL**: `/test-connection`
 - **Method**: GET
 - **Description**: Tests the connection to the database and retrieves the list of tables.
@@ -446,7 +469,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 4. **News Page**
+### 5. **News Page**
 - **URL**: `/news_page`
 - **Method**: GET
 - **Description**: Fetches news articles with optional date filtering and renders them in an HTML page.
@@ -457,7 +480,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 5. **News Article**
+### 6. **News Article**
 - **URL**: `/news_article`
 - **Method**: GET
 - **Description**: Fetches details of a specific news article and renders it in an HTML page.
@@ -467,7 +490,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 6. **Insert News Page**
+### 7. **Insert News Page**
 - **URL**: `/insert_news_page`
 - **Method**: GET
 - **Description**: Renders a page for inserting news articles.
@@ -475,7 +498,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 7. **Insert Title**
+### 8. **Insert Title**
 - **URL**: `/insert-title`
 - **Method**: POST
 - **Description**: Inserts a new title into the database.
@@ -508,7 +531,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 8. **Insert Article**
+### 9. **Insert Article**
 - **URL**: `/insert-article`
 - **Method**: POST
 - **Description**: Inserts a new article into the database.
@@ -541,7 +564,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 9. **Run Web Crawlers**
+### 10. **Run Web Crawlers**
 - **URL**: `/run-crawlers`
 - **Method**: POST
 - **Description**: Runs web crawlers to collect news articles from various sources and stores them in the database.
@@ -563,7 +586,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 10. **Update Articles**
+### 11. **Update Articles**
 - **URL**: `/update-articles`
 - **Method**: GET
 - **Description**: Processes articles with null embeddings by generating embeddings, cluster assignments, bias, hoax, and ideology classifications.
@@ -578,7 +601,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 11. **Group Articles**
+### 12. **Group Articles**
 - **URL**: `/group-articles`
 - **Method**: GET, POST
 - **Description**: Groups articles with NULL title_index by using the /separate endpoint to identify similar articles.
@@ -594,7 +617,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 12. **Process Articles**
+### 13. **Process Articles**
 - **URL**: `/process-articles`
 - **Method**: GET, POST
 - **Description**: Processes article groups by generating titles, summaries, analysis, and setting images for each group in the title table.
@@ -610,7 +633,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 13. **Count Side**
+### 14. **Count Side**
 - **URL**: `/count-side`
 - **Method**: GET
 - **Description**: Counts the number of articles categorized as liberal, conservative, or neutral for a given title index.
@@ -631,10 +654,10 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 14. **Top News**
+### 15. **Top News**
 - **URL**: `/top-news`
 - **Method**: GET
-- **Description**: Fetches the top news articles based on the number of articles in each group for the previous day.
+- **Description**: Fetches the top news articles based on the number of articles in each group for the current day.
 - **Query Parameters**:
   - `limit`: The maximum number of top news groups to fetch (default is 5).
 - **Response**:
@@ -647,14 +670,24 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
               "title": "Top News Title",
               "image": "image_url",
               "all_summary": "Summary of the news",
-              "article_count": 10
+              "article_count": 10,
+              "counts": {
+                  "liberal": 5,
+                  "conservative": 3,
+                  "neutral": 2
+              }
           },
           {
               "title_index": 2,
-              "title": "Top News Title",
+              "title": "Another Top News Title",
               "image": "image_url",
               "all_summary": "Summary of the news",
-              "article_count": 10
+              "article_count": 8,
+              "counts": {
+                  "liberal": 4,
+                  "conservative": 2,
+                  "neutral": 2
+              }
           }
       ]
   }
@@ -662,7 +695,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 15. **Get Cluster News**
+### 16. **Get Cluster News**
 - **URL**: `/get-cluster-news`
 - **Method**: GET
 - **Description**: Fetches news articles belonging to a specific cluster with detailed information.
@@ -694,7 +727,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 16. **Get News**
+### 17. **Get News**
 - **URL**: `/get-news`
 - **Method**: GET
 - **Description**: Fetches the latest news articles for the current day with their title, image, date, title_index, cluster, and political distribution counts.
@@ -722,7 +755,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 17. **Get News Detail**
+### 18. **Get News Detail**
 - **URL**: `/get-news-detail`
 - **Method**: GET
 - **Description**: Fetches detailed information about a specific news article group including its title, cluster, image, date, summary, analysis, and all related articles.
@@ -754,7 +787,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 18. **Search Title**
+### 19. **Search Title**
 - **URL**: `/search-title`
 - **Method**: GET
 - **Description**: Searches for news articles whose titles contain the specified query string.
