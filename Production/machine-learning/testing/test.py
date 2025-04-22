@@ -126,6 +126,12 @@ def test_get_cluster_news(cluster):
         with app.test_client() as client:
             response = client.get(f'/get-cluster-news?cluster={cluster}')
             return response.json
+        
+def test_search_title(query):
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.get(f'/search-title?query={query}')
+            return response.json
 # =============================================================================================
 
 def FetchDbToJson(db_config):
@@ -384,8 +390,12 @@ db_config = {
 # print(test_top_news(3))
 
 # Test get-cluster-news endpoint with a sample cluster (replace '1' with an actual cluster if needed)
-print("Testing get-cluster-news endpoint:")
-print(test_get_cluster_news(2))
+# print("Testing get-cluster-news endpoint:")
+# print(test_get_cluster_news(2))
+
+# Test search-title endpoint with a sample query (replace 'sample' with an actual query if needed)
+# print("Testing search-title endpoint:")
+# print(test_search_title('Pemprov'))
 
 # print(test_endpoint('title', test_data)) 
 # print(test_endpoint('modeCluster', test_data))

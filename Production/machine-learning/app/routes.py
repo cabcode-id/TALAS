@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 import numpy as np
 import pandas as pd
-from collections import Counter
 
 from flask import request, jsonify, redirect, url_for
 
@@ -477,31 +476,6 @@ def ner():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-    
-@app.route('/top_keywords', methods=['POST'])
-def top_keywords():
-    try:
-        data = request.get_json()
-        
-        df = pd.DataFrame(data)
-        
-        if 'keyword' not in df.columns:
-            return jsonify({"error": "Each dictionary must contain a 'keyword' field"}), 400
-
-        # Flatten the list of all keywords
-        all_keywords = [keyword for entry in data for keyword in entry['keyword']]
-
-        # Count occurrences
-        keyword_counts = Counter(all_keywords)
-
-        # Get the top 10 most common keywords
-        top_keywords = keyword_counts.most_common(10)
-
-        return jsonify(top_keywords), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
-
 
 if __name__ == "__main__":
     app.run(debug=False)

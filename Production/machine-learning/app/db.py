@@ -1,8 +1,12 @@
 from flask import Blueprint, jsonify, request, render_template
 from flask_mysqldb import MySQL
-import re 
 import json
+import os
 from app.utils.crawlers import main as run_crawlers
+from collections import Counter
+
+from dotenv import load_dotenv
+load_dotenv()
 
 db_blueprint = Blueprint('db_blueprint', __name__)
 
@@ -10,11 +14,11 @@ mysql = None
 
 def init_mysql(app):
     global mysql
-    app.config["MYSQL_HOST"] = "localhost"  
-    app.config["MYSQL_USER"] = "root"
-    app.config["MYSQL_PASSWORD"] = ""
-    app.config["MYSQL_DB"] = "news"
-    app.config["MYSQL_PORT"] = 3306 
+    app.config["MYSQL_HOST"] = os.environ.get("MYSQL_HOST")
+    app.config["MYSQL_USER"] = os.environ.get("MYSQL_USER")
+    app.config["MYSQL_PASSWORD"] = os.environ.get("MYSQL_PASSWORD")
+    app.config["MYSQL_DB"] = os.environ.get("MYSQL_DB")
+    app.config["MYSQL_PORT"] = int(os.environ.get("MYSQL_PORT"))
     app.config["MYSQL_CURSORCLASS"] = "DictCursor"
 
     mysql = MySQL(app)
@@ -106,6 +110,7 @@ def news_article():
 def insert_news_page():
     return render_template("insert_news.html")
 
+# DO NOT REMOVE. FOR FUTURE USE.
 # @db_blueprint.route("/insert-title", methods=["POST"])
 # def insert_title():
 #     try:
@@ -362,7 +367,7 @@ def group_articles():
     try:
         cur = mysql.connection.cursor()
         
-        # Step 1: Select articles with NULL title_index
+        # Select articles with NULL title_index
         cur.execute("SELECT * FROM articles WHERE title_index IS NULL")
         articles = cur.fetchall()
         
@@ -379,11 +384,10 @@ def group_articles():
                 'content': article['content'],
                 'embedding': json.loads(article['embedding']) if article['embedding'] else None
             }
-
                     
             articles_data.append(article_data)
         
-        # Step 2: Send articles to /separate endpoint
+        # Send articles to /separate endpoint
         from app.routes import app
         with app.test_client() as client:
             response = client.post(
@@ -397,27 +401,27 @@ def group_articles():
                 
             clusters = response.json.get("separate", [])
         
-        # Step 3: Get the maximum title_index from the title table
+        # Get the maximum title_index from the title table
         cur.execute("SELECT MAX(title_index) as max_index FROM title")
         result = cur.fetchone()
         max_index = 0  # Default to 0 if no records exist
         if result and result['max_index'] is not None:
             max_index = result['max_index']
         
-        # Step 4: Add max+1 to the title_index returned from /separate
+        # Add max+1 to the title_index returned from /separate
         offset = max_index + 1
         new_title_indices = [cluster + offset for cluster in clusters]
         
         # Determine unique title_index values to insert into title table
         unique_title_indices = set(new_title_indices)
         
-        # Step 5: Update the title_index in the articles table
+        # Update the title_index in the articles table
         update_query = "UPDATE articles SET title_index = %s WHERE id = %s"
         # Cnth: (101, {'id': 1}, (102, {'id': 2}))
         update_data = [(new_index, article['id']) for new_index, article in zip(new_title_indices, articles)]
         cur.executemany(update_query, update_data)
         
-        # Step 6: Add new rows to title table
+        # Add new rows to title table
         if unique_title_indices:
             insert_query = "INSERT INTO title (title_index) VALUES (%s)"
             insert_data = [(index,) for index in unique_title_indices]
@@ -441,7 +445,7 @@ def process_articles():
     try:
         cur = mysql.connection.cursor()
         
-        # Step 1: Fetch title records with empty title field
+        # Fetch title records with empty title field
         cur.execute("SELECT title_index FROM title WHERE title IS NULL OR title = ''")
         title_records = cur.fetchall()
         
@@ -449,13 +453,15 @@ def process_articles():
             return jsonify({"success": True, "message": "No articles found with empty title", "count": 0})
         
         processed_count = 0
+        ner_requests = []
+
         from app.routes import app
         
         with app.test_client() as client:
             for record in title_records:
                 title_index = record['title_index']
                 
-                # Step 2: Fetch all articles with this title_index
+                # Fetch all articles with this title_index
                 cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
                 group_articles = cur.fetchall()
                 
@@ -475,7 +481,6 @@ def process_articles():
                     }
                     formatted_articles.append(formatted_article)
                 
-                # Step 3: Call title endpoint
                 response = client.post(
                     '/title',
                     data=json.dumps(formatted_articles),
@@ -485,7 +490,6 @@ def process_articles():
                     continue
                 title = response.json.get('title')
                 
-                # Step 4: Call modeCluster endpoint
                 response = client.post(
                     '/modeCluster',
                     data=json.dumps(formatted_articles),
@@ -495,7 +499,6 @@ def process_articles():
                     continue
                 mode_cluster = response.json.get('modeCluster')
                 
-                # Step 5: Call summary endpoint
                 response = client.post(
                     '/summary',
                     data=json.dumps(formatted_articles),
@@ -505,7 +508,6 @@ def process_articles():
                     continue
                 all_summary = response.json.get('all_summary')
                 
-                # Step 6: Call analyze endpoint
                 response = client.post(
                     '/analyze',
                     data=json.dumps(formatted_articles),
@@ -515,14 +517,14 @@ def process_articles():
                     continue
                 analysis = response.json.get('analyze')
                 
-                # Step 7: Get the first image link from the articles
+                # Get the first image link from the articles
                 image_link = None
                 for article in group_articles:
                     if article['image'] and article['image'].strip():
                         image_link = article['image'].strip()
                         break
                 
-                # Step 8: Update the title table
+                # Update the title table
                 update_query = """
                 UPDATE title 
                 SET title = %s, cluster = %s, 
@@ -536,6 +538,32 @@ def process_articles():
                 mysql.connection.commit()
                 processed_count += 1
         
+                ner_requests.append({
+                    "id": title_index,
+                    "content": all_summary
+                })
+
+            if ner_requests:
+                ner_response = client.post(
+                    '/ner',
+                    data=json.dumps(ner_requests),
+                    content_type='application/json'
+                )
+
+                if ner_response.status_code == 200:
+                    ner_results = ner_response.json
+                    for request, entities in zip(ner_requests, ner_results):
+                        keywords = []
+                        if entities and isinstance(entities, list):
+                            for entity in entities:
+                                if entity.get('tag', '').startswith(('B-', 'I-')):
+                                    keywords.append(entity['word'])
+                        
+                        cur.execute(
+                            "UPDATE title SET keyword = %s WHERE title_index = %s",
+                            (json.dumps(keywords), request['id'])
+                        )
+                        mysql.connection.commit()
         cur.close()
         
         return jsonify({
@@ -677,6 +705,94 @@ def get_cluster_news():
             "success": True,
             "data": result,
             "total": len(result)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/search-title", methods=["GET"])
+def search_title():
+    try:
+        search_query = request.args.get('query', '')
+        
+        if not search_query:
+            return jsonify({"success": False, "error": "No search query provided"}), 400
+        
+        cur = mysql.connection.cursor()
+        
+        cur.execute("SELECT * FROM title WHERE LOWER(title) LIKE LOWER(%s)", (f"%{search_query}%",))
+        news_items = cur.fetchall()
+        
+        if not news_items:
+            return jsonify({"success": True, "message": "No news found for this query", "count": 0})
+        
+        result = []
+        for item in news_items:
+            result.append({
+                'title_index': item['title_index'],
+                'title': item['title'],
+                'date': item['date'],
+                'all_summary': item['all_summary'],
+                'image': item['image']
+            })
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "data": result,
+            "total": len(result)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/get-top-keywords", methods=["GET"]) 
+def get_top_keywords():
+    try:
+        cur = mysql.connection.cursor()
+        
+        limit = request.args.get('limit', default=5, type=int)
+        
+        query = """
+            SELECT keyword
+            FROM title
+            WHERE keyword IS NOT NULL
+            AND keyword != '[]'
+            AND DATE(date) = CURDATE()
+        """
+    
+        query += " "
+        cur.execute(query)
+            
+        results = cur.fetchall()
+        
+        if not results:
+            return jsonify({
+                "success": True,
+                "message": "No keywords found",
+                "data": []
+            })
+        
+        all_keywords = []
+        for row in results:
+            if row['keyword']:
+                try:
+                    keywords = json.loads(row['keyword'])
+                    all_keywords.extend(keywords)
+                except json.JSONDecodeError:
+                    continue
+        
+        keyword_counts = Counter(all_keywords)
+        
+        top_keywords = keyword_counts.most_common(limit)
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "data": top_keywords,
+            "total": len(all_keywords)
         })
         
     except Exception as e:

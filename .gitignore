@@ -6,3 +6,5 @@ __pycache__/
 Development/userlogin/node_modules
 Production/node_modules
 *.pem
+Production/venv/
+*.out
