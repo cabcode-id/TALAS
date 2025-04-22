@@ -75,8 +75,8 @@ def create_analysis(query_engine, cuan_result):
     Your task is to analyze a given query and generate a response summarizing how articles from each perspective address the topic. 
     
     Ensure the response follows this structure:
-    Liberal: [Summarize key points using the language and tone of liberal articles (ideology value closer to 1). If no liberal perspective exists, return "there are no liberal perspectives."]
-    Conservative: [Summarize key points using the language and tone of conservative articles (ideology value closer to 0). If no conservative perspective exists, return "there are no conservative perspectives."]
+    Dari sisi Liberal: [Summarize key points using the language and tone of liberal articles (ideology value closer to 1). If no liberal perspective exists, return "there are no liberal perspectives."]
+    Dari sisi Konservatif: [Summarize key points using the language and tone of conservative articles (ideology value closer to 0). If no conservative perspective exists, return "there are no conservative perspectives."]
     
     Follow these guidelines:
     Derive all information directly from the provided articles—do not rely on prior knowledge or external context.

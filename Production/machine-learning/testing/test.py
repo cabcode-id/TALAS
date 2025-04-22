@@ -132,6 +132,24 @@ def test_search_title(query):
         with app.test_client() as client:
             response = client.get(f'/search-title?query={query}')
             return response.json
+
+def test_getner():
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.get('/getner')
+            return response.json
+        
+def test_getnews():
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.get('/get-news')
+            return response.json
+
+def test_getnewsdetail():
+    with app.app_context():
+        with app.test_client() as client:
+            response = client.get('/get-news-detail?title_index=76')
+            return response.json
 # =============================================================================================
 
 def FetchDbToJson(db_config):
@@ -397,6 +415,18 @@ db_config = {
 # print("Testing search-title endpoint:")
 # print(test_search_title('Pemprov'))
 
+# Test getner endpoint
+# print("Testing getner endpoint")
+# print(test_getner())
+
+# Test get-news endpoint
+# print("Testing get-news endpoint")
+# print(test_getnews())
+
+# Test get-news endpoint
+# print("Testing get-news endpoint")
+# print(test_getnewsdetail())
+
 # print(test_endpoint('title', test_data)) 
 # print(test_endpoint('modeCluster', test_data))
 # print(test_endpoint('analyze', test_data))
@@ -425,28 +455,28 @@ db_config = {
 # print(test_endpoint('antipode', antipode_data))
 
 # if __name__ == '__main__':
-# test_data = [
-#     {
-#         "content": "Menteri Koordinator Bidang Kemaritiman dan Investasi (Menko Marves) Luhut Binsar Pandjaitan menghadiri forum investasi di Jakarta."
-#     },
-#     {
-#         "content": "Presiden Joko Widodo meresmikan proyek infrastruktur baru di ibu kota negara."
-#     },
-#     {
-#         "content": "Pemerintah mengumumkan kebijakan baru terkait subsidi energi untuk masyarakat."
-#     }
-# ]
+#     test_data = [
+#         {
+#             "content": "Menteri Koordinator Bidang Kemaritiman dan Investasi (Menko Marves) Luhut Binsar Pandjaitan menghadiri forum investasi di Jakarta."
+#         },
+#         {
+#             "content": "Presiden Joko Widodo meresmikan proyek infrastruktur baru di ibu kota negara."
+#         },
+#         {
+#             "content": "Pemerintah mengumumkan kebijakan baru terkait subsidi energi untuk masyarakat."
+#         }
+#     ]
 
-# def test_ner_endpoint(test_data):
-#     with app.test_client() as client:
-#         response = client.post(
-#             '/ner',
-#             data=json.dumps(test_data), 
-#             content_type='application/json'
-#         )
-#         return response.json
+#     def test_ner_endpoint(test_data):
+#         with app.test_client() as client:
+#             response = client.post(
+#                 '/ner',
+#                 data=json.dumps(test_data), 
+#                 content_type='application/json'
+#             )
+#             return response.json
 
-# print(test_ner_endpoint(test_data))
+#     print(test_ner_endpoint(test_data))
 
 
 # test_data = [

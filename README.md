@@ -691,3 +691,90 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
       "total": 2
   }
   ```
+
+---
+
+### 16. **Get News**
+- **URL**: `/get-news`
+- **Method**: GET
+- **Description**: Fetches the latest news articles for the current day with their title, image, date, title_index, cluster, and political distribution counts.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "title": "News Article Title",
+              "image": "image_url",
+              "date": "2025-01-05",
+              "title_index": 123,
+              "cluster": 4,
+              "counts": {
+                  "liberal": 5,
+                  "conservative": 3,
+                  "neutral": 2
+              }
+          }
+      ],
+      "total": 1
+  }
+  ```
+
+---
+
+### 17. **Get News Detail**
+- **URL**: `/get-news-detail`
+- **Method**: GET
+- **Description**: Fetches detailed information about a specific news article group including its title, cluster, image, date, summary, analysis, and all related articles.
+- **Query Parameters**:
+  - `title_index`: The index of the news title to fetch details for.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "title": "News Article Title",
+      "cluster": 4,
+      "image": "image_url",
+      "date": "2025-01-05",
+      "all_summary": "Comprehensive summary of the news topic",
+      "analysis": "Detailed analysis of the news from different perspectives",
+      "articles": [
+          {
+              "title": "Related Article Title",
+              "url": "article_url",
+              "source": "News Source",
+              "date": "2025-01-05",
+              "bias": 0.42,
+              "hoax": 0.12,
+              "ideology": 0.65
+          }
+      ]
+  }
+  ```
+
+---
+
+### 18. **Search Title**
+- **URL**: `/search-title`
+- **Method**: GET
+- **Description**: Searches for news articles whose titles contain the specified query string.
+- **Query Parameters**:
+  - `query`: The search term to look for in news titles.
+- **Response**:
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "title_index": 123,
+              "title": "News Article Title Containing Search Term",
+              "date": "2025-01-05",
+              "all_summary": "Summary of the article content",
+              "image": "image_url"
+          }
+      ],
+      "total": 1
+  }
+  ```
+
+---
