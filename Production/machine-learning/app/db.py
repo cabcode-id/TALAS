@@ -151,7 +151,107 @@ def get_news_detail():
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-    
+
+@db_blueprint.route("/get-today-articles", methods=["GET"])
+def get_today_articles():
+    try:
+        verbose = request.args.get('verbose', 'False').lower() == 'true'
+        
+        cur = mysql.connection.cursor()
+        
+        if verbose:
+            cur.execute("SELECT * FROM articles WHERE DATE(date) = CURDATE()")
+        else:
+            cur.execute("SELECT id, title, url, source, image, date, bias, hoax, ideology, title_index FROM articles WHERE DATE(date) = CURDATE()")
+        
+        today_articles = cur.fetchall()
+        result = [dict(article) for article in today_articles]
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "data": result,
+            "count": len(result)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/get-today-source-counts", methods=["GET"])
+def get_today_source_counts():
+    try:
+        cur = mysql.connection.cursor()
+        
+        cur.execute("""
+            SELECT source, COUNT(*) as count 
+            FROM articles 
+            WHERE DATE(date) = CURDATE() 
+            GROUP BY source
+        """)
+        source_counts = cur.fetchall()
+        result = [dict(count) for count in source_counts]
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "data": result,
+            "count": len(result)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/get-today-titles", methods=["GET"])
+def get_today_titles():
+    try:
+        cur = mysql.connection.cursor()
+        
+        cur.execute("SELECT * FROM title WHERE DATE(date) = CURDATE()")
+        today_titles = cur.fetchall()
+        result = [dict(title) for title in today_titles]
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "data": result,
+            "count": len(result)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@db_blueprint.route("/get-title-groups", methods=["GET"])
+def get_title_groups():
+    try:
+        cur = mysql.connection.cursor()
+        
+        cur.execute("SELECT title_index FROM title WHERE DATE(date) = CURDATE()")
+        today_titles = cur.fetchall()
+        
+        # For each title_index, get all articles
+        title_groups = {}
+        for title in today_titles:
+            title_index = title['title_index']
+            
+            cur.execute("SELECT id, title, source FROM articles WHERE title_index = %s", (title_index,))
+            grouped_articles = cur.fetchall()
+            
+            title_groups[title_index] = [dict(article) for article in grouped_articles]
+        
+        cur.close()
+        
+        return jsonify({
+            "success": True,
+            "data": title_groups,
+            "count": len(title_groups)
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @db_blueprint.route("/run-crawlers", methods=["POST"])
 def run_crawlers_endpoint():
     try:
@@ -686,6 +786,170 @@ def search_title():
         
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+# @db_blueprint.route("/get-top-keywords", methods=["GET"]) 
+# def get_top_keywords():
+#     try:
+#         cur = mysql.connection.cursor()
+        
+#         limit = request.args.get('limit', default=5, type=int)
+        
+#         query = """
+#             SELECT keyword
+#             FROM title
+#             WHERE keyword IS NOT NULL
+#             AND keyword != '[]'
+#             AND DATE(date) = CURDATE()
+#         """
+    
+#         query += " "
+#         cur.execute(query)
+            
+#         results = cur.fetchall()
+        
+#         if not results:
+#             return jsonify({
+#                 "success": True,
+#                 "message": "No keywords found",
+#                 "data": []
+#             })
+        
+#         all_keywords = []
+#         for row in results:
+#             if row['keyword']:
+#                 try:
+#                     keywords = json.loads(row['keyword'])
+#                     all_keywords.extend(keywords)
+#                 except json.JSONDecodeError:
+#                     continue
+        
+#         keyword_counts = Counter(all_keywords)
+        
+#         top_keywords = keyword_counts.most_common(limit)
+        
+#         cur.close()
+        
+#         return jsonify({
+#             "success": True,
+#             "data": top_keywords,
+#             "total": len(all_keywords)
+#         })
+        
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+# @db_blueprint.route("/getner", methods=["GET"])
+# def getner():
+#     try:
+#         cur = mysql.connection.cursor()
+        
+#         cur.execute("SELECT title_index, all_summary FROM title WHERE keyword IS NULL AND all_summary IS NOT NULL AND all_summary != ''")
+#         title_records = cur.fetchall()
+        
+#         if not title_records:
+#             return jsonify({"success": True, "message": "No titles found with null keywords", "count": 0})
+        
+#         processed_count = 0
+#         ner_requests = []
+
+#         for record in title_records:
+#             ner_requests.append({
+#                 "id": record['title_index'],
+#                 "content": record['all_summary']
+#             })
+
+#         if not ner_requests:
+#             return jsonify({"success": True, "message": "No content to process", "count": 0})
+            
+#         from app.routes import app
+        
+#         with app.test_client() as client:
+#             ner_response = client.post(
+#                 '/ner',
+#                 data=json.dumps(ner_requests),
+#                 content_type='application/json'
+#             )
+
+#             if ner_response.status_code == 200:
+#                 ner_results = ner_response.json
+#                 for request, entities in zip(ner_requests, ner_results):
+#                     keywords = []
+#                     if entities and isinstance(entities, list):
+#                         for entity in entities:
+#                             if entity.get('tag', '').startswith(('B-', 'I-')):
+#                                 keywords.append(entity['word'])
+                    
+#                     # Only update the database if keywords list is not empty
+#                     if keywords:
+#                         cur.execute(
+#                             "UPDATE title SET keyword = %s WHERE title_index = %s",
+#                             (json.dumps(keywords), request['id'])
+#                         )
+#                         mysql.connection.commit()
+#                         processed_count += 1
+#             else:
+#                 return jsonify({"success": False, "error": "NER endpoint returned an error", "status": ner_response.status_code}), 500
+
+#         cur.close()
+        
+#         return jsonify({
+#             "success": True,
+#             "message": f"Successfully processed keywords for {processed_count} titles",
+#             "total_titles": len(title_records),
+#             "processed_titles": processed_count
+#         })
+        
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+
+# @db_blueprint.route("/users")
+# def users():
+#     cur = mysql.connection.cursor()
+#     cur.execute("""SELECT user, host FROM mysql.user""")
+#     rv = cur.fetchall()
+#     return jsonify(rv)
+
+# @db_blueprint.route("/news")
+# def get_news():
+#     try:
+#         cur = mysql.connection.cursor()
+#         cur.execute("SELECT * FROM articles LIMIT 10")
+#         news_items = cur.fetchall()
+#         cur.close()
+#         return jsonify({"success": True, "data": news_items})
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+# @db_blueprint.route("/test-connection")
+# def test_connection():
+#     try:
+#         cur = mysql.connection.cursor()
+#         cur.execute("SHOW TABLES")
+#         tables = cur.fetchall()
+#         cur.close()
+#         return jsonify({"success": True, "tables": tables})
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+# @db_blueprint.route("/news_page", methods=["GET"
+# def news_page(
+#     tr
+#         start_date = request.args.get('start_date'
+#         end_date = request.args.get('end_date')
+#         cur = mysql.connection.cursor()
+      
+#         if start_date and end_dat
+#             cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s"
+#                       (start_date, end_date
+#         els
+#             cur.execute("SELECT title, image, date, title_index, cluster FROM title")
+          
+#         news_items = cur.fetchall
+#         cur.close
+#         return render_template("news.html", news_items=news_items, start_date=start_date, end_date=end_dat
+#     except Exception as 
+#         return render_template("error.html", error=str(e)), 500
+
 
 # @db_blueprint.route("/get-top-keywords", methods=["GET"]) 
 # def get_top_keywords():
@@ -832,145 +1096,59 @@ def search_title():
 #     except Exception as e:
 #         return jsonify({"success": False, "error": str(e)}), 500
 
-# @db_blueprint.route("/news_page", methods=["GET"])
-# def news_page():
-#     try:
-#         start_date = request.args.get('start_date') 
+# @db_blueprint.route("/news_page", methods=["GET"
+# def news_page(
+#     tr
+#         start_date = request.args.get('start_date'
 #         end_date = request.args.get('end_date')
-
 #         cur = mysql.connection.cursor()
-        
-#         if start_date and end_date:
-#             cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s", 
-#                       (start_date, end_date))
-#         else:
+      
+#         if start_date and end_dat
+#             cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s"
+#                       (start_date, end_date
+#         els
 #             cur.execute("SELECT title, image, date, title_index, cluster FROM title")
-            
-#         news_items = cur.fetchall()
-#         cur.close()
-#         return render_template("news.html", news_items=news_items, start_date=start_date, end_date=end_date)
-#     except Exception as e:
+          
+#         news_items = cur.fetchall
+#         cur.close
+#         return render_template("news.html", news_items=news_items, start_date=start_date, end_date=end_dat
+#     except Exception as 
 #         return render_template("error.html", error=str(e)), 500
 
-# def parse_analysis(text):
-#     text = text.replace("Liberal:", "Dari sisi liberal:")
-#     text = text.replace("Conservative:", "Dari sisi konservatif:")
-#     return text
+def parse_analysis(text):
+    text = text.replace("Liberal:", "Dari sisi liberal:")
+    text = text.replace("Conservative:", "Dari sisi konservatif:")
+    return text
 
-# @db_blueprint.route("/news_article", methods=["GET"])
-# def news_article():
-#     try:
-#         title_index = request.args.get('title_index')
+@db_blueprint.route("/news_article", methods=["GET"])
+def news_article():
+    try:
+        title_index = request.args.get('title_index')
         
-#         if not title_index:
-#             return render_template("error.html", error="No article ID provided"), 400
+        if not title_index:
+            return render_template("error.html", error="No article ID provided"), 400
             
-#         cur = mysql.connection.cursor()
+        cur = mysql.connection.cursor()
 
-#         cur.execute("SELECT * FROM title WHERE title_index = %s", (title_index,)) 
-#         news = cur.fetchone()
+        cur.execute("SELECT * FROM title WHERE title_index = %s", (title_index,)) 
+        news = cur.fetchone()
         
-#         if not news:
-#             cur.close()
-#             return render_template("error.html", error="Article not found"), 404
-#         if "analysis" in news and news["analysis"]:
-#             news["parsed_analysis"] = parse_analysis(news["analysis"])
-#         else:
-#             news["parsed_analysis"] = news["analysis"] if "analysis" in news else ""
-#         cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
-#         articles = cur.fetchall()
-#         cur.close()
+        if not news:
+            cur.close()
+            return render_template("error.html", error="Article not found"), 404
+        if "analysis" in news and news["analysis"]:
+            news["parsed_analysis"] = parse_analysis(news["analysis"])
+        else:
+            news["parsed_analysis"] = news["analysis"] if "analysis" in news else ""
+        cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
+        articles = cur.fetchall()
+        cur.close()
 
-#         return render_template("news_article.html", news=news, articles=articles)
+        return render_template("news_article.html", news=news, articles=articles)
 
-#     except Exception as e:
-#         return render_template("error.html", error=str(e)), 500
+    except Exception as e:
+        return render_template("error.html", error=str(e)), 500
 
-# @db_blueprint.route("/insert_news_page", methods=["GET"])
-# def insert_news_page():
-#     return render_template("insert_news.html")
-
-# DO NOT REMOVE. FOR FUTURE USE.
-# @db_blueprint.route("/insert-title", methods=["POST"])
-# def insert_title():
-#     try:
-#         title = request.form.get('title', '')
-#         cluster = request.form.get('cluster', '')
-#         image = request.form.get('image', '')
-#         date = request.form.get('date', '')
-#         all_summary = request.form.get('all_summary', '')
-#         analysis = request.form.get('analysis', '')
-        
-#         if not title:
-#             return jsonify({"success": False, "error": "Title is required"}), 400
-            
-#         cur = mysql.connection.cursor()
-        
-#         # Insert record with title_index as NULL (it will be auto-generated if it's an auto-increment field)
-#         cur.execute(
-#             """INSERT INTO title 
-#                (title, cluster, image, date, all_summary, analysis) 
-#                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-#             (title, cluster, image, date, all_summary, analysis)
-#         )
-#         mysql.connection.commit()
-        
-#         # Get the ID of the newly inserted record
-#         title_index = cur.lastrowid
-#         cur.close()
-        
-#         return jsonify({
-#             "success": True, 
-#             "message": "Article inserted successfully",
-#             "title": {
-#                 "title": title,
-#                 "cluster": cluster,
-#                 "image": image,
-#                 "date": date,
-#                 "title_index": title_index
-#             }
-#         })
-#     except Exception as e:
-#         return jsonify({"success": False, "error": str(e)}), 500
-
-# @db_blueprint.route("/insert-article", methods=["POST"])
-# def insert_article():
-#     try:
-#         title = request.form.get('title', '')
-#         source = request.form.get('source', 'PukulEnam')
-#         url = request.form.get('url', '')
-#         image = request.form.get('image', '')
-#         date = request.form.get('date', '')
-#         content = request.form.get('content', '')
-
-#         if not title or not content:
-#             return jsonify({"success": False, "error": "Title and content are required"}), 400
-            
-#         cur = mysql.connection.cursor()
-        
-#         cur.execute("SELECT MAX(id) as max_id FROM articles")
-#         result = cur.fetchone()
-#         next_id = 1
-#         if result and result['max_id'] is not None:
-#             next_id = result['max_id'] + 1
-            
-#         cur.execute(
-#             "INSERT INTO articles (id, title, source, url, image, date, content) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-#             (next_id, title, source, url, image, date, content)
-#         )
-#         mysql.connection.commit()
-#         cur.close()
-#         return jsonify({
-#             "success": True, 
-#             "message": "Article inserted successfully",
-#             "article": {
-#                 "id": next_id,
-#                 "title": title,
-#                 "source": source,
-#                 "url": url,
-#                 "image": image,
-#                 "date": date
-#             }
-#         })
-#     except Exception as e:
-#         return jsonify({"success": False, "error": str(e)}), 500
+@db_blueprint.route("/insert_news_page", methods=["GET"])
+def insert_news_page():
+    return render_template("insert_news.html")

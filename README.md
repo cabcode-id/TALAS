@@ -407,7 +407,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 2. **Fetch Users**
+### 2. **Fetch Users (UNAVAILABLE)**
 - **URL**: `/users`
 - **Method**: GET
 - **Description**: Fetches a list of MySQL users.
@@ -423,7 +423,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 3. **Fetch News**
+### 3. **Fetch News (UNAVAILABLE)**
 - **URL**: `/news`
 - **Method**: GET
 - **Description**: Fetches a list of news articles from the database.
@@ -453,7 +453,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 4. **Test Database Connection**
+### 4. **Test Database Connection (UNAVAILABLE)**
 - **URL**: `/test-connection`
 - **Method**: GET
 - **Description**: Tests the connection to the database and retrieves the list of tables.
@@ -490,7 +490,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 7. **Insert News Page**
+### 7. **Insert News Page (UNAVAILABLE)**
 - **URL**: `/insert_news_page`
 - **Method**: GET
 - **Description**: Renders a page for inserting news articles.
@@ -498,7 +498,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 8. **Insert Title**
+### 8. **Insert Title (UNAVAILABLE)**
 - **URL**: `/insert-title`
 - **Method**: POST
 - **Description**: Inserts a new title into the database.
@@ -531,7 +531,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 
 ---
 
-### 9. **Insert Article**
+### 9. **Insert Article (UNAVAILBLE)**
 - **URL**: `/insert-article`
 - **Method**: POST
 - **Description**: Inserts a new article into the database.
