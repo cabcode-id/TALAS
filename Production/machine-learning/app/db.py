@@ -931,26 +931,6 @@ def search_title():
 #     except Exception as e:
 #         return jsonify({"success": False, "error": str(e)}), 500
 
-# @db_blueprint.route("/news_page", methods=["GET"
-# def news_page(
-#     tr
-#         start_date = request.args.get('start_date'
-#         end_date = request.args.get('end_date')
-#         cur = mysql.connection.cursor()
-      
-#         if start_date and end_dat
-#             cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s"
-#                       (start_date, end_date
-#         els
-#             cur.execute("SELECT title, image, date, title_index, cluster FROM title")
-          
-#         news_items = cur.fetchall
-#         cur.close
-#         return render_template("news.html", news_items=news_items, start_date=start_date, end_date=end_dat
-#     except Exception as 
-#         return render_template("error.html", error=str(e)), 500
-
-
 # @db_blueprint.route("/get-top-keywords", methods=["GET"]) 
 # def get_top_keywords():
 #     try:
@@ -1096,24 +1076,26 @@ def search_title():
 #     except Exception as e:
 #         return jsonify({"success": False, "error": str(e)}), 500
 
-# @db_blueprint.route("/news_page", methods=["GET"
-# def news_page(
-#     tr
-#         start_date = request.args.get('start_date'
-#         end_date = request.args.get('end_date')
-#         cur = mysql.connection.cursor()
-      
-#         if start_date and end_dat
-#             cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s"
-#                       (start_date, end_date
-#         els
-#             cur.execute("SELECT title, image, date, title_index, cluster FROM title")
-          
-#         news_items = cur.fetchall
-#         cur.close
-#         return render_template("news.html", news_items=news_items, start_date=start_date, end_date=end_dat
-#     except Exception as 
-#         return render_template("error.html", error=str(e)), 500
+@db_blueprint.route("/news_page", methods=["GET"])
+def news_page():
+    try:
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        cur = mysql.connection.cursor()
+
+        if start_date and end_date:
+            cur.execute(
+                "SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s",
+                (start_date, end_date)
+            )
+        else:
+            cur.execute("SELECT title, image, date, title_index, cluster FROM title")
+
+        news_items = cur.fetchall()
+        cur.close()
+        return render_template("news.html", news_items=news_items, start_date=start_date, end_date=end_date)
+    except Exception as e:
+        return render_template("error.html", error=str(e)), 500
 
 def parse_analysis(text):
     text = text.replace("Liberal:", "Dari sisi liberal:")
