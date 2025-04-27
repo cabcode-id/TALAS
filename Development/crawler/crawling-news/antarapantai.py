@@ -19,15 +19,17 @@ def find_links(url):
 
     span_elements = []
 
-    # Mengambil waktu saat ini dalam zona waktu Jakarta (GMT+7)
-    current_hour = datetime.now(timezone(timedelta(hours=7))).hour
-    # Menghitung jam yang sudah berlalu dari jam saat ini untuk crawl dari awal hari ini.
-    hour_patterns = [f"\\b{i} jam lalu\\b" for i in range(1, current_hour + 1)]
-    minute_pattern = "\\b\\d+ menit lalu\\b"
-    time_pattern = f"{minute_pattern}|{('|'.join(hour_patterns))}"
+    # G pake range waktu dulu
+    # # Mengambil waktu saat ini dalam zona waktu Jakarta (GMT+7)
+    # current_hour = datetime.now(timezone(timedelta(hours=7))).hour
+    # # Menghitung jam yang sudah berlalu dari jam saat ini untuk crawl dari awal hari ini.
+    # hour_patterns = [f"\\b{i} jam lalu\\b" for i in range(1, current_hour + 1)]
+    # minute_pattern = "\\b\\d+ menit lalu\\b"
+    # time_pattern = f"{minute_pattern}|{('|'.join(hour_patterns))}"
 
     for div in divs:
-        spans = div.find_all('span', string=re.compile(time_pattern, re.IGNORECASE))
+        # spans = div.find_all('span', string=re.compile(time_pattern, re.IGNORECASE))
+        spans = div.find_all('span')
         span_elements.extend(spans)
 
     links_dict = {}
@@ -72,7 +74,7 @@ def find_links(url):
 def collect_articles(links_dict):
     data = []
     raw_date = get_raw_date()
-    source = "Antara"
+    source = "Antara Sanur"
     for title, link in links_dict.items():
         try:
             get_content = requests.get(link, timeout=10)
@@ -174,7 +176,7 @@ def crawl_antara():
     consecutive_empty_pages = 0
     
     while page <= max_pages:
-        url = f'https://www.antaranews.com/terkini/{page}'
+        url = f'https://www.antaranews.com/tag/pantai-sanur-bali/{page}'
         try:
             links_dict = find_links(url)
             

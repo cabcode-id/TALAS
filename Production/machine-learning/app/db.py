@@ -76,8 +76,9 @@ def get_news():
         #     cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s", 
         #               (start_date, end_date))
         # else:
-        cur.execute("SELECT title, image, all_summary, date, title_index, cluster FROM title WHERE date = CURDATE()")
-            
+        cur.execute("SELECT title, image, all_summary, date, title_index, cluster FROM title WHERE DATE(date) = CURDATE()")            
+        
+        # cur.execute("SELECT title, image, all_summary, date, title_index, cluster FROM title WHERE DATE(date) >= CURDATE() - INTERVAL 1 DAY")            
         news_items = cur.fetchall()
         
         result = []
@@ -257,7 +258,11 @@ def run_crawlers_endpoint():
     try:
         params = request.json or {}
         
-        results = run_crawlers(**params)
+        # Extract ?pantai, default False
+        pantai = params.pop('pantai', False)
+        
+        # Add pantai parameter to run_crawlers in crawlers init.
+        results = run_crawlers(pantai=pantai, **params)
         
         if not results:
             return jsonify({"success": True, "message": "Crawlers executed but no results were returned", "count": 0}), 200
@@ -660,7 +665,7 @@ def top_news():
         cur = mysql.connection.cursor()
         
         limit = request.args.get('limit', default=5, type=int)
-
+        
         query = """
             SELECT a.title_index, COUNT(*) as article_count 
             FROM articles a
@@ -670,6 +675,16 @@ def top_news():
             ORDER BY article_count DESC
             LIMIT %s
         """
+
+        # query = """
+        #     SELECT a.title_index, COUNT(*) as article_count 
+        #     FROM articles a
+        #     JOIN title t ON a.title_index = t.title_index
+        #     WHERE t.date >= CURDATE() - INTERVAL 1 DAY
+        #     GROUP BY a.title_index
+        #     ORDER BY article_count DESC
+        #     LIMIT %s
+        # """
 
         cur.execute(query, (limit,))
             
