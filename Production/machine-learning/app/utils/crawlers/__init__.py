@@ -23,10 +23,10 @@ def run_all_crawlers(**kwargs) -> List[Dict[str, Any]]:
     
     for module_name in crawler_modules:
         # Kalau pantai_only True, hanya jalankan module antarapantai
-        if pantai_only and module_name != 'antarapantai':
+        if pantai_only and 'pantai' not in module_name:
             continue
         # Kalau pantai_only False, hanya jalankan module selain antarapantai
-        if not pantai_only and module_name == 'antarapantai':
+        if not pantai_only and 'pantai' in module_name:
             continue
             
         try:
