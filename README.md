@@ -678,7 +678,7 @@ TALAS adalah sistem berbasis API untuk menganalisis berita menggunakan model pem
 - **Request**:
   ```json
   {
-      "optional_parameters": "value" // Optional parameters for crawler configuration
+      "pantai": "True" // Default false (run only antarapantai.py. else run the rest without pantai.)
   }
   ```
 - **Response**:
