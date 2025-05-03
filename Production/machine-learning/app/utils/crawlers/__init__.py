@@ -18,7 +18,17 @@ def run_all_crawlers(**kwargs) -> List[Dict[str, Any]]:
     all_results = []
     crawler_modules = get_crawler_modules()
     
+    # Check ada parameter pantai atau tidak 
+    pantai_only = kwargs.pop('pantai', False)
+    
     for module_name in crawler_modules:
+        # Kalau pantai_only True, hanya jalankan module antarapantai
+        if pantai_only and 'pantai' not in module_name:
+            continue
+        # Kalau pantai_only False, hanya jalankan module selain antarapantai
+        if not pantai_only and 'pantai' in module_name:
+            continue
+            
         try:
             # Dynamically import the crawler module
             module_path = f"app.utils.crawlers.{module_name}"
