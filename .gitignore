@@ -8,3 +8,4 @@ Production/node_modules
 *.pem
 Production/venv/
 *.out
+**/venv/
