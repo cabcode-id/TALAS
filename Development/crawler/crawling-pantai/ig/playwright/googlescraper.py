@@ -31,7 +31,7 @@ def run(playwright: Playwright) -> None:
 
     # Perform search
     print("Entering search query...")
-    search_query = 'site:instagram.com intitle:"pantai sanur" after:2025-05-12 before:2025-05-15 -inurl:reel -inurl:tv -inurl:stories'
+    search_query = 'site:instagram.com intitle:"pantai sanur" after:2025-05-01 before:2025-05-15 -inurl:reel -inurl:tv -inurl:stories'
     search_box = page.locator('textarea.gLFyf')
     search_box.fill(search_query)
     search_box.press("Enter")
