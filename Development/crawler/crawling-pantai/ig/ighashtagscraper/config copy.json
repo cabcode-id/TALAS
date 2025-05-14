@@ -1,0 +1,27 @@
+{
+    "search_post_count": 10,
+    "queries": {},
+    "completed_queries": {
+        "pantaisanur": {
+            "type": "search",
+            "post_count": 2,
+            "updated": "2025-05-09 15:43:35",
+            "saved_file": "search/pantaisanur.json",
+            "status": "Completed"
+        }
+    },
+    "user_reels_path": "user reels/",
+    "follow_user_reels": true,
+    "search_path": "search/",
+    "username": "",
+    "password": "",
+    "headless": false,
+    "download_directory": "downloads/",
+    "disable_images": false,
+    "disable_videos": true,
+    "driver_executable_path": "./chromedriver.exe",
+    "disable_saving_password": true,
+    "select_results": false,
+    "default_timeout": 10,
+    "log_file": "instagram.log"
+}

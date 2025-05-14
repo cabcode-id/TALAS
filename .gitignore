@@ -9,3 +9,6 @@ Production/node_modules
 Production/venv/
 *.out
 **/venv/
+Development/crawler/crawling-pantai/twit/cookies.json
+Development/crawler/crawling-pantai/ig/session-parktaekun6
+Development/crawler/crawling-pantai/ig/ighashtagscraper/config.json
