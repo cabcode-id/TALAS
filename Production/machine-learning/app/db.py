@@ -67,41 +67,64 @@ def calculate_ideology_counts(articles):
 @db_blueprint.route("/get-news", methods=["GET"])
 def get_news():
     try:
-        # start_date = request.args.get('start_date') 
-        # end_date = request.args.get('end_date')
-
         cur = mysql.connection.cursor()
         
-        # if start_date and end_date:
-        #     cur.execute("SELECT title, image, date, title_index, cluster FROM title WHERE date BETWEEN %s AND %s", 
-        #               (start_date, end_date))
-        # else:
-        cur.execute("SELECT title, image, all_summary, date, title_index, cluster FROM title WHERE DATE(date) = CURDATE()")            
-        
-        # cur.execute("SELECT title, image, all_summary, date, title_index, cluster FROM title WHERE DATE(date) >= CURDATE() - INTERVAL 1 DAY")            
+        # Fetch news titles from the past day
+        cur.execute("""
+            SELECT title, image, all_summary, date, title_index, cluster 
+            FROM title 
+            WHERE DATE(date) >= CURDATE() - INTERVAL 1 DAY
+        """)
         news_items = cur.fetchall()
         
+        # Extract title indices for batch processing
+        title_indices = [item['title_index'] for item in news_items]
+        counts_map = {}
+        
+        if title_indices:
+            # Fetch pre-aggregated ideology counts for all relevant articles in one query
+            query = """
+                SELECT 
+                    title_index,
+                    SUM(CASE WHEN ideology <= 0.25 THEN 1 ELSE 0 END) AS liberal,
+                    SUM(CASE WHEN ideology >= 0.75 THEN 1 ELSE 0 END) AS conservative,
+                    SUM(CASE WHEN ideology > 0.25 AND ideology < 0.75 THEN 1 ELSE 0 END) AS neutral
+                FROM articles
+                WHERE title_index IN %s
+                GROUP BY title_index
+            """
+            cur.execute(query, (tuple(title_indices),))
+            counts_rows = cur.fetchall()
+            
+            # Convert counts to integers explicitly
+            counts_map = {
+                row['title_index']: {
+                    'liberal': int(row['liberal']),
+                    'conservative': int(row['conservative']),
+                    'neutral': int(row['neutral'])
+                } for row in counts_rows
+            }
+        
+        # Build the result with integer counts
         result = []
         for item in news_items:
             title_index = item['title_index']
-            
-            cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
-            articles = cur.fetchall()
-            
-            counts = calculate_ideology_counts(articles)
-            
+            counts = counts_map.get(title_index, {
+                'liberal': 0,
+                'conservative': 0,
+                'neutral': 0
+            })
             result.append({
                 'title': item['title'],
                 'image': item['image'],
                 'all_summary': item['all_summary'],
                 'date': item['date'],
-                'title_index': item['title_index'],
+                'title_index': title_index,
                 'cluster': item['cluster'],
                 'counts': counts
             })
-            
-        cur.close()
         
+        cur.close()
         return jsonify({
             "success": True,
             "data": result,
@@ -666,25 +689,25 @@ def top_news():
         
         limit = request.args.get('limit', default=5, type=int)
         
-        query = """
-            SELECT a.title_index, COUNT(*) as article_count 
-            FROM articles a
-            JOIN title t ON a.title_index = t.title_index
-            WHERE t.date = CURDATE()
-            GROUP BY a.title_index
-            ORDER BY article_count DESC
-            LIMIT %s
-        """
-
         # query = """
         #     SELECT a.title_index, COUNT(*) as article_count 
         #     FROM articles a
         #     JOIN title t ON a.title_index = t.title_index
-        #     WHERE t.date >= CURDATE() - INTERVAL 1 DAY
+        #     WHERE t.date = CURDATE()
         #     GROUP BY a.title_index
         #     ORDER BY article_count DESC
         #     LIMIT %s
         # """
+
+        query = """
+            SELECT a.title_index, COUNT(*) as article_count 
+            FROM articles a
+            JOIN title t ON a.title_index = t.title_index
+            WHERE t.date >= CURDATE() - INTERVAL 1 DAY
+            GROUP BY a.title_index
+            ORDER BY article_count DESC
+            LIMIT %s
+        """
 
         cur.execute(query, (limit,))
             
