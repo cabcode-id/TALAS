@@ -68,22 +68,21 @@ def calculate_ideology_counts(articles):
 def get_news():
     try:
         cur = mysql.connection.cursor()
-        
-        # Fetch news titles from the past day
+
+
         cur.execute("""
             SELECT title, image, all_summary, date, title_index, cluster 
             FROM title 
-            WHERE DATE(date) >= CURDATE() - INTERVAL 1 DAY
+            WHERE date >= CURDATE() - INTERVAL 1 DAY
         """)
         news_items = cur.fetchall()
-        
-        # Extract title indices for batch processing
+
         title_indices = [item['title_index'] for item in news_items]
         counts_map = {}
-        
+
         if title_indices:
-            # Fetch pre-aggregated ideology counts for all relevant articles in one query
-            query = """
+           
+            cur.execute("""
                 SELECT 
                     title_index,
                     SUM(CASE WHEN ideology <= 0.25 THEN 1 ELSE 0 END) AS liberal,
@@ -92,11 +91,9 @@ def get_news():
                 FROM articles
                 WHERE title_index IN %s
                 GROUP BY title_index
-            """
-            cur.execute(query, (tuple(title_indices),))
+            """, (tuple(title_indices),))
             counts_rows = cur.fetchall()
-            
-            # Convert counts to integers explicitly
+
             counts_map = {
                 row['title_index']: {
                     'liberal': int(row['liberal']),
@@ -104,8 +101,8 @@ def get_news():
                     'neutral': int(row['neutral'])
                 } for row in counts_rows
             }
-        
-        # Build the result with integer counts
+
+        # Susun hasil akhir
         result = []
         for item in news_items:
             title_index = item['title_index']
@@ -114,6 +111,7 @@ def get_news():
                 'conservative': 0,
                 'neutral': 0
             })
+
             result.append({
                 'title': item['title'],
                 'image': item['image'],
@@ -123,14 +121,15 @@ def get_news():
                 'cluster': item['cluster'],
                 'counts': counts
             })
-        
+
         cur.close()
+
         return jsonify({
             "success": True,
             "data": result,
             "total": len(result)
         })
-        
+
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
