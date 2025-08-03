@@ -102,7 +102,7 @@ def get_news():
                 } for row in counts_rows
             }
 
-        # Susun hasil akhir
+        # Compose final result
         result = []
         for item in news_items:
             title_index = item['title_index']
