@@ -448,7 +448,7 @@ def group_articles():
         cur = mysql.connection.cursor()
         
         # Select articles with NULL title_index
-        cur.execute("SELECT * FROM articles WHERE title_index IS NULL LIMIT 50")
+        cur.execute("SELECT * FROM articles WHERE title_index IS NULL LIMIT 10")
         articles = cur.fetchall()
         
         if not articles:
@@ -526,7 +526,7 @@ def process_articles():
         cur = mysql.connection.cursor()
         
         # Fetch title records with empty title field
-        cur.execute("SELECT title_index FROM title WHERE title IS NULL OR title = '' LIMIT 20")
+        cur.execute("SELECT title_index FROM title WHERE title IS NULL OR title = '' LIMIT 5")
         title_records = cur.fetchall()
         
         if not title_records:
