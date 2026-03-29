@@ -685,21 +685,12 @@ def count_side():
 def top_news():
     try:
         cur = mysql.connection.cursor()
-        
-        limit = request.args.get('limit', default=5, type=int)
-        
-        # query = """
-        #     SELECT a.title_index, COUNT(*) as article_count 
-        #     FROM articles a
-        #     JOIN title t ON a.title_index = t.title_index
-        #     WHERE t.date = CURDATE()
-        #     GROUP BY a.title_index
-        #     ORDER BY article_count DESC
-        #     LIMIT %s
-        # """
 
+        limit = request.args.get('limit', default=5, type=int)
+
+        # Ambil top title_index berdasarkan jumlah artikel
         query = """
-            SELECT a.title_index, COUNT(*) as article_count 
+            SELECT a.title_index, COUNT(*) as article_count
             FROM articles a
             JOIN title t ON a.title_index = t.title_index
             WHERE t.date >= CURDATE() - INTERVAL 1 DAY
@@ -707,46 +698,60 @@ def top_news():
             ORDER BY article_count DESC
             LIMIT %s
         """
-
         cur.execute(query, (limit,))
-            
         top_news_groups = cur.fetchall()
-        
+
         if not top_news_groups:
+            cur.close()
             return jsonify({
-                "success": True, 
+                "success": True,
                 "message": "No news found for the specified date",
                 "data": []
             })
-        
+
+        # Ambil semua title_index
+        title_indexes = [row['title_index'] for row in top_news_groups]
+
+        # Ambil semua title_details sekaligus
+        format_strings = ','.join(['%s'] * len(title_indexes))
+        cur.execute(f"SELECT * FROM title WHERE title_index IN ({format_strings})", tuple(title_indexes))
+        title_details_rows = cur.fetchall()
+        title_details_map = {row['title_index']: row for row in title_details_rows}
+
+        # Ambil semua articles sekaligus
+        cur.execute(f"SELECT * FROM articles WHERE title_index IN ({format_strings})", tuple(title_indexes))
+        articles_rows = cur.fetchall()
+
+        # Kelompokkan articles berdasarkan title_index
+        articles_map = {}
+        for art in articles_rows:
+            tidx = art['title_index']
+            articles_map.setdefault(tidx, []).append(art)
+
         result = []
         for news in top_news_groups:
-            title_index = news['title_index']
-            
-            cur.execute("SELECT * FROM title WHERE title_index = %s", (title_index,))
-            title_details = cur.fetchone()
-            
-            cur.execute("SELECT * FROM articles WHERE title_index = %s", (title_index,))
-            articles = cur.fetchall()
+            tidx = news['title_index']
+            title_detail = title_details_map.get(tidx)
+            articles = articles_map.get(tidx, [])
             counts = calculate_ideology_counts(articles)
-            
-            if title_details:
+
+            if title_detail:
                 result.append({
-                    "title_index": title_index,
-                    "title": title_details.get('title'),
-                    "image": title_details.get('image'),
-                    "all_summary": title_details.get('all_summary'),
+                    "title_index": tidx,
+                    "title": title_detail.get('title'),
+                    "image": title_detail.get('image'),
+                    "all_summary": title_detail.get('all_summary'),
                     "article_count": news['article_count'],
                     "counts": counts
                 })
-        
+
         cur.close()
-        
+
         return jsonify({
             "success": True,
             "data": result
         })
-        
+
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
